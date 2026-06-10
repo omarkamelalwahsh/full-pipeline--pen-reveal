@@ -1,0 +1,6 @@
+{
+  "name": "Lumina Pen Reveal",
+  "description": "Generates a cinematic pen reveal drawing animation synchronized with audio transcription using Gemini AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
