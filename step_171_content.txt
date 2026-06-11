@@ -1,0 +1,75 @@
+Created At: 2026-06-11T14:39:52Z
+Completed At: 2026-06-11T14:39:54Z
+The following changes were made by the replace_file_content tool to: e:\full-pipeline--pen-reveal\src\Workspace.tsx. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -2408,268 +2408,224 @@
+                 {/* 1. ASSETS TAB CONTENT */}
+                 {activeLeftTab === 'assets' && (
+                   <div className="space-y-6">
+-                    {/* Storyboard Status EMPTY */}
+-                    {storyboardStatus === 'EMPTY' && (
+-                      <div className="space-y-4">
+-                        <div className="flex flex-col gap-1.5">
+-                          <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+-                            AI Script Input
+-                          </label>
++                    {/* A. AI Storyboard Pipeline Section */}
++                    <div className="p-4 bg-slate-50/50 border border-slate-200 rounded-xl space-y-4 shadow-sm">
++                      <span className="text-[10px] font-bold tracking-widest text-indigo-600 uppercase flex items-center gap-1.5">
++                        <Sparkles className="w-3.5 h-3.5" />
++                        AI Storyboard Creator
++                      </span>
++                      
++                      {storyboardStatus === 'EMPTY' && (
++                        <div className="space-y-3">
+                           <textarea
+-                            rows={7}
++                            rows={4}
+                             value={scriptInput}
+                             onChange={(e) => setScriptInput(e.target.value)}
+-                            placeholder="Type your story or script here to generate a magnificent storyboard structure..."
++                            placeholder="Type script here to auto-generate scenes..."
+                             dir="auto"
+-                            className="w-full bg-white border border-slate-
+<truncated 28577 bytes>
+er-white border-t-transparent rounded-full animate-spin" />
+-                                      <span>{t.generatingVoice}</span>
+-                                    </>
+-                                  ) : (
+-                                    <span>{t.generateVoiceBtn}</span>
+-                                  )}
+-                                </button>
+-
+-                                {audioUrl && (
+-                                  <div className="p-2 bg-indigo-50/50 border border-indigo-100 rounded-lg flex flex-col gap-1 text-[10px] text-indigo-650 font-mono">
+-                                    <span>🎤 Story Voiceover Loaded</span>
+-                                    <audio src={audioUrl} controls className="w-full h-8 scale-95 mt-1" />
+-                                  </div>
+-                                )}
+-                              </div>
+-                            )}
+-                          </div>
+-                        </div>
+-
+-                      </div>
+-                    )}
++                                <span>{t.generateVoiceBtn}</span>
++                              )}
++                            </button>
++
++                            {audioUrl && (
++                              <div className="p-2 bg-indigo-50/50 border border-indigo-100 rounded-lg flex flex-col gap-1 text-[10px] text-indigo-650 font-mono">
++                                <span>🎤 Story Voiceover Loaded</span>
++                                <audio src={audioUrl} controls className="w-full h-8 scale-95 mt-1" />
++                              </div>
++                            )}
++                          </div>
++                        )}
++                      </div>
++                    </div>
+                   </div>
+                 )}
+ 
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.

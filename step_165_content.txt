@@ -1,0 +1,39 @@
+Created At: 2026-06-11T14:38:37Z
+Completed At: 2026-06-11T14:38:37Z
+File Path: `file:///e:/full-pipeline--pen-reveal/src/Workspace.tsx`
+Total Lines: 3880
+Total Bytes: 186597
+Showing lines 2400 to 2430
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+2400:                 >
+2401:                   <X className="w-4 h-4" />
+2402:                 </button>
+2403:               </div>
+2404: 
+2405:               {/* Drawer Content */}
+2406:               <div className="p-5 space-y-6">
+2407:                 
+2408:                 {/* 1. ASSETS TAB CONTENT */}
+2409:                 {activeLeftTab === 'assets' && (
+2410:                   <div className="space-y-6">
+2411:                     {/* Storyboard Status EMPTY */}
+2412:                     {storyboardStatus === 'EMPTY' && (
+2413:                       <div className="space-y-4">
+2414:                         <div className="flex flex-col gap-1.5">
+2415:                           <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+2416:                             AI Script Input
+2417:                           </label>
+2418:                           <textarea
+2419:                             rows={7}
+2420:                             value={scriptInput}
+2421:                             onChange={(e) => setScriptInput(e.target.value)}
+2422:                             placeholder="Type your story or script here to generate a magnificent storyboard structure..."
+2423:                             dir="auto"
+2424:                             className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-700 focus:border-indigo-500 outline-none resize-none leading-relaxed shadow-inner"
+2425:                           />
+2426:                         </div>
+2427: 
+2428:                         <div className="flex flex-col gap-2 pt-1">
+2429:                           <button
+2430:                             onClick={handleCreateStoryboard}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

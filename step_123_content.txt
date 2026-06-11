@@ -1,0 +1,34 @@
+Created At: 2026-06-11T14:21:10Z
+Completed At: 2026-06-11T14:21:10Z
+File Path: `file:///e:/full-pipeline--pen-reveal/src/Workspace.tsx`
+Total Lines: 3695
+Total Bytes: 173864
+Showing lines 2505 to 2530
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+2505:                                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+2506:                                 <span>{t.generatingVoice}</span>
+2507:                               </>
+2508:                             ) : (
+2509:                               <span>{t.generateVoiceBtn}</span>
+2510:                             )}
+2511:                           </button>
+2512: 
+2513:                           {audioUrl && (
+2514:                             <div className="p-2 bg-indigo-50/50 border border-indigo-100 rounded-lg flex flex-col gap-1 text-[10px] text-indigo-650 font-mono">
+2515:                               <span>🎤 Story Voiceover Loaded</span>
+2516:                               <audio src={audioUrl} controls className="w-full h-8 scale-95 mt-1" />
+2517:                             </div>
+2518:                           )}
+2519:                         </div>
+2520:                       )}
+2521:                     </div>
+2522:                   </div>
+2523:                 )}
+2524: 
+2525:                 {/* 2. SCRIPT TAB CONTENT (AI STORYBOARD & EDIT) */}
+2526:                 {activeLeftTab === 'script' && (
+2527:                   <div className="space-y-6">
+2528:                     {/* AI Storyboard Block */}
+2529:                     <div className="p-4 border border-slate-200 bg-slate-50/30 rounded-xl space-y-4">
+2530:                       <div className="flex items-center justify-between">
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

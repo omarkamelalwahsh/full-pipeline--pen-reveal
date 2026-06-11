@@ -1,0 +1,4 @@
+Created At: 2026-06-11T14:38:40Z
+Completed At: 2026-06-11T14:38:40Z
+{"File":"e:\\full-pipeline--pen-reveal\\src\\Workspace.tsx","LineNumber":2394,"LineContent":"                  {activeLeftTab === 'script' \u0026\u0026 (lang === 'en' ? 'AI Storyboard \u0026 Script' : 'لوحة القصة والذكاء')}"}
+{"File":"e:\\full-pipeline--pen-reveal\\src\\Workspace.tsx","LineNumber":2677,"LineContent":"                {activeLeftTab === 'script' \u0026\u0026 ("}

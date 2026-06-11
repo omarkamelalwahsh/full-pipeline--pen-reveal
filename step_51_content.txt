@@ -1,0 +1,49 @@
+Created At: 2026-06-11T13:38:49Z
+Completed At: 2026-06-11T13:38:50Z
+File Path: `file:///e:/full-pipeline--pen-reveal/src/Workspace.tsx`
+Total Lines: 3374
+Total Bytes: 159379
+Showing lines 480 to 520
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+480:   const [useFreeModel, setUseFreeModel] = useState<boolean>(true);
+481:   const autoExtractPendingRef = useRef<boolean>(false);
+482: 
+483:   const canvasRef = useRef<HTMLCanvasElement>(null);
+484:   const animationRef = useRef<number | null>(null);
+485:   const audioRef = useRef<HTMLAudioElement | null>(null);
+486:   
+487:   const [elements, setElements] = useState<ElementSequence[]>([]);
+488:   const [rawPaths, setRawPaths] = useState<Point[][]>([]);
+489:   const [unassignedPaths, setUnassignedPaths] = useState<Point[][]>([]);
+490:   
+491:   // Manual Selection State
+492:   const [isSelectionMode, setIsSelectionMode] = useState(false);
+493:   const [activeElementId, setActiveElementId] = useState<string | null>(null);
+494:   const [brushSize, setBrushSize] = useState(20);
+495:   const [isEraser, setIsEraser] = useState(false);
+496:   const [isMouseDown, setIsMouseDown] = useState(false);
+497: 
+498:   // We keep the loaded images
+499:   const mainImgRef = useRef<HTMLImageElement | null>(null);
+500:   const penImgRef = useRef<HTMLImageElement | null>(null);
+501: 
+502:   // Settings
+503:   const [glowSize, setGlowSize] = useState(20);
+504:   const [baseOpacity, setBaseOpacity] = useState(5); // %
+505:   const [edgeSensitivity, setEdgeSensitivity] = useState(50); // 1-100
+506:   const [penScale, setPenScale] = useState(10); // scale 1-100 mapped to canvas width percent
+507:   const [penOffsetX, setPenOffsetX] = useState(8); // 0 = left, 50 = center, 100 = right of the pen image
+508:   const [penOffsetY, setPenOffsetY] = useState(8); // 0 = top, 50 = center, 100 = bottom of the pen image
+509:   const [fps, setFps] = useState(30);
+510:   const [defaultPenSpeed, setDefaultPenSpeed] = useState(50); // 1-100
+511:   const [colorMode, setColorMode] = useState<'paint' | 'outline'>('outline');
+512:   const [canvasBgColor, setCanvasBgColor] = useState('#050505');
+513:   const [drawDirection, setDrawDirection] = useState<'default' | 'ltr' | 'rtl' | 'ttb' | 'btt'>('default');
+514:   const [activeLeftTab, setActiveLeftTab] = useState<'assets' | 'script' | 'adjust' | null>('assets');
+515:   const [isHandEditorOpen, setIsHandEditorOpen] = useState(false);
+516: 
+517:   // Trigger recalculation on sensitivity or mode change
+518:   useEffect(() => {
+519:     if (elements.length > 0 && !isSelectionMode) {
+520:       setElements([]);
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

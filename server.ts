@@ -1,5 +1,7 @@
 import express from "express";
 import path from "path";
+import os from "os";
+import { spawn } from "child_process";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import multer from "multer";
@@ -111,12 +113,12 @@ async function startServer() {
     const hasAudio = JSON.stringify(params).toLowerCase().includes("audio/");
     // Only fall back to audio-supporting models if params contains audio
     const modelFallbacks = hasAudio
-      ? ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.1-pro-preview"]
-      : ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.1-pro-preview"];
+      ? ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.1-pro-preview"]
+      : ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.1-pro-preview"];
       
     let lastError: any = null;
 
-    const requestedModel = params.model || "gemini-3.5-flash";
+    const requestedModel = params.model || "gemini-2.5-flash";
     const candidateModels = Array.from(new Set([requestedModel, ...modelFallbacks]));
 
     for (const model of candidateModels) {
@@ -185,7 +187,7 @@ async function startServer() {
       let transcription: any[] = [];
       try {
         const response = await generateContentWithRetry({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: {
             parts: [
               { text: prompt },
@@ -282,7 +284,7 @@ async function startServer() {
       let mapping: Record<string, number> = {};
       try {
         const response = await generateContentWithRetry({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: {
             parts: [
               { text: prompt },
@@ -340,7 +342,7 @@ async function startServer() {
       let segments: any[] = [];
       try {
         const response = await generateContentWithRetry({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: {
             parts: [
               { text: prompt },
@@ -499,7 +501,7 @@ async function startServer() {
           `;
 
           const response = await generateContentWithRetry({
-            model: "gemini-3.5-flash",
+            model: "gemini-2.5-flash",
             contents: [
               {
                 inlineData: {
@@ -595,7 +597,7 @@ async function startServer() {
       let updatedSteps = stepsToUse;
       try {
         const rewriteRes = await generateContentWithRetry({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: editStepsPrompt,
           config: {
             responseMimeType: "application/json",
@@ -678,7 +680,7 @@ async function startServer() {
         `;
 
         const svgResponse = await generateContentWithRetry({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: svgGenerationPrompt,
         });
         generatedSvg = svgResponse.text ? svgResponse.text.trim() : "";
@@ -743,7 +745,7 @@ async function startServer() {
       `;
 
       const response = await generateContentWithRetry({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -1099,7 +1101,7 @@ async function startServer() {
       let transcription: any[] = [];
       try {
         const transResponse = await generateContentWithRetry({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: {
             parts: [
               { text: transPrompt },
@@ -1197,7 +1199,7 @@ Logic Guidelines:
       let expandedPrompt = `Composite whiteboard storyboard illustrating: ${text}, flat clean vector icon style, solid ${bgColor === 'black' ? 'black' : 'white'} background, high contrast, 5 structured steps.`;
       try {
         const promptRes = await generateContentWithRetry({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: systemPrompt,
         });
         if (promptRes.text) {
@@ -1262,7 +1264,7 @@ Logic Guidelines:
         let generatedSvg = "";
         try {
           const svgResponse = await generateContentWithRetry({
-            model: "gemini-3.5-flash",
+            model: "gemini-2.5-flash",
             contents: svgGenerationPrompt,
           });
           generatedSvg = svgResponse.text ? svgResponse.text.trim() : "";
@@ -1409,6 +1411,215 @@ Logic Guidelines:
     }
   });
 
+  // Network and sharing endpoints
+  let tunnelProcess: any = null;
+  let tunnelUrl: string | null = null;
+  let tunnelPublicIp: string | null = null;
+
+  function getLocalIpAddresses() {
+    const interfaces = os.networkInterfaces();
+    const addresses: string[] = [];
+    for (const name of Object.keys(interfaces)) {
+      for (const iface of interfaces[name] || []) {
+        if (iface.family === 'IPv4' && !iface.internal) {
+          addresses.push(iface.address);
+        }
+      }
+    }
+    return addresses;
+  }
+
+  app.get("/api/network-info", async (req, res) => {
+    const localIps = getLocalIpAddresses();
+    const localUrl = localIps.length > 0 ? `http://${localIps[0]}:${PORT}` : `http://localhost:${PORT}`;
+    res.json({
+      localUrl,
+      tunnelUrl,
+      publicIp: tunnelPublicIp
+    });
+  });
+
+  app.post("/api/start-tunnel", async (req, res) => {
+    if (tunnelUrl) {
+      return res.json({ url: tunnelUrl, publicIp: tunnelPublicIp });
+    }
+
+    try {
+      // Get public IP for tunnel password
+      const ipRes = await fetch("https://api.ipify.org?format=json");
+      const ipData = await ipRes.json() as any;
+      tunnelPublicIp = ipData.ip;
+    } catch (err) {
+      console.warn("Could not retrieve public IP address:", err);
+    }
+
+    try {
+      const cmd = process.platform === "win32" ? "npx.cmd" : "npx";
+      console.log(`Starting localtunnel on port ${PORT}...`);
+      tunnelProcess = spawn(cmd, ["localtunnel", "--port", PORT.toString()]);
+
+      let resolved = false;
+
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          res.status(500).json({ error: "Tunnel startup timed out" });
+        }
+      }, 12000);
+
+      tunnelProcess.stdout.on("data", (data: any) => {
+        const output = data.toString();
+        console.log(`[Tunnel stdout] ${output}`);
+        const match = output.match(/your url is:\s*(https:\/\/[^\s]+)/i);
+        if (match && match[1]) {
+          tunnelUrl = match[1].trim();
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timeout);
+            res.json({ url: tunnelUrl, publicIp: tunnelPublicIp });
+          }
+        }
+      });
+
+      tunnelProcess.stderr.on("data", (data: any) => {
+        console.error(`[Tunnel stderr] ${data.toString()}`);
+      });
+
+      tunnelProcess.on("close", (code: any) => {
+        console.log(`Tunnel process exited with code ${code}`);
+        tunnelUrl = null;
+        tunnelProcess = null;
+      });
+
+      tunnelProcess.on("error", (err: any) => {
+        console.error("Tunnel process error:", err);
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          res.status(500).json({ error: err.message || "Failed to start tunnel process" });
+        }
+      });
+
+    } catch (error: any) {
+      console.error("Failed to start tunnel:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // API Route for Pipeline Create (AI Script Parser)
+  app.post("/api/pipeline/create", async (req, res) => {
+    try {
+      const { script } = req.body;
+      if (!script) {
+        return res.status(400).json({ error: "No script text provided" });
+      }
+
+      console.log(`[Pipeline] Creating storyboard from script: "${script.substring(0, 50)}..."`);
+
+      const prompt = `
+        You are a storyboard script writer.
+        Parse the following voiceover script into exactly 5 logical, chronological scenes.
+        For each scene, provide:
+        1. A sequential "scene_number" (integer 1 to 5).
+        2. The visual/script "text" chunk for that scene.
+        3. An estimated "duration_seconds" (an integer, e.g. 5, 8, 10) depending on the amount of script text (approx 1 second per 3 words, min 3 seconds, max 15 seconds).
+
+        Script to parse:
+        "${script}"
+
+        Return a strict JSON array of 5 objects containing "scene_number", "text", and "duration_seconds".
+        Do not include any conversational text or markdown blocks, only the raw JSON.
+      `;
+
+      let scenes: any[] = [];
+      try {
+        const response = await generateContentWithRetry({
+          model: "gemini-2.5-flash",
+          contents: prompt,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  scene_number: { type: Type.INTEGER },
+                  text: { type: Type.STRING },
+                  duration_seconds: { type: Type.INTEGER }
+                },
+                required: ["scene_number", "text", "duration_seconds"]
+              }
+            }
+          }
+        });
+        const parsed = JSON.parse(response.text || "[]");
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          scenes = parsed;
+        }
+      } catch (e: any) {
+        console.warn("[Pipeline] AI script parsing failed, using paragraph split fallback:", e.message);
+      }
+
+      if (scenes.length === 0) {
+        // Heuristic fallback: split by double newlines or sentences
+        const paragraphs = script.split(/\n\n+/).filter(Boolean).slice(0, 5);
+        if (paragraphs.length === 0) paragraphs.push(script);
+        while (paragraphs.length < 5) {
+          paragraphs.push(`Continuing narrative... Scene ${paragraphs.length + 1}`);
+        }
+        scenes = paragraphs.map((text, i) => {
+          const wordCount = text.split(/\s+/).length;
+          return {
+            scene_number: i + 1,
+            text,
+            duration_seconds: Math.max(3, Math.min(15, Math.ceil(wordCount / 3)))
+          };
+        });
+      }
+
+      // Map to add scene_id
+      const formattedScenes = scenes.map((s, idx) => ({
+        scene_id: `scene-${Date.now()}-${idx}-${Math.floor(Math.random() * 1000)}`,
+        scene_number: s.scene_number || (idx + 1),
+        text: s.text || "",
+        duration_seconds: s.duration_seconds || 5
+      }));
+
+      res.json({ scenes: formattedScenes });
+    } catch (error: any) {
+      console.error("[Pipeline] Pipeline create error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // API Route for Pipeline Edit (targeted incremental update)
+  app.put("/api/pipeline/edit", async (req, res) => {
+    try {
+      const { project_id, scene_id, text } = req.body;
+      if (!scene_id || text === undefined) {
+        return res.status(400).json({ error: "Missing scene_id or text" });
+      }
+
+      console.log(`[Pipeline] Editing scene ID: ${scene_id} with updated text`);
+
+      // Recalculate duration based on the new text (approx 1 second per 3 words)
+      const wordCount = text.split(/\s+/).length;
+      const duration_seconds = Math.max(3, Math.min(15, Math.ceil(wordCount / 3)));
+
+      res.json({
+        success: true,
+        scene: {
+          scene_id,
+          text,
+          duration_seconds
+        }
+      });
+    } catch (error: any) {
+      console.error("[Pipeline] Pipeline edit error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -1425,7 +1636,13 @@ Logic Guidelines:
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`\n🚀 Server is running!`);
+    console.log(`🏠 Local:            http://localhost:${PORT}`);
+    const localIps = getLocalIpAddresses();
+    localIps.forEach(ip => {
+      console.log(`🌐 On Your Network:  http://${ip}:${PORT}`);
+    });
+    console.log(`\n💡 To share this publicly over the internet, click "Share / Invite" in the UI.\n`);
   });
 }
 

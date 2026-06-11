@@ -1,0 +1,4 @@
+Created At: 2026-06-11T14:17:29Z
+Completed At: 2026-06-11T14:17:29Z
+{"File":"e:\\full-pipeline--pen-reveal\\src\\Workspace.tsx","LineNumber":2269,"LineContent":"                  {activeLeftTab === 'assets' \u0026\u0026 (lang === 'en' ? 'Asset Management' : 'إدارة الوسائط')}"}
+{"File":"e:\\full-pipeline--pen-reveal\\src\\Workspace.tsx","LineNumber":2285,"LineContent":"                {activeLeftTab === 'assets' \u0026\u0026 ("}
