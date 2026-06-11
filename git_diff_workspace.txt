@@ -1,0 +1,1048 @@
+diff --git a/src/Workspace.tsx b/src/Workspace.tsx
+index 7c4ce5d..e9922db 100644
+--- a/src/Workspace.tsx
++++ b/src/Workspace.tsx
+@@ -2204,94 +2204,29 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
+ 
+     return (
+       <div id="audio-timeline-section" className="mt-8 space-y-4 border-t border-white/10 pt-6">
+-        <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase flex items-center justify-between">
+-          <span className="flex items-center gap-2">
+-            <Volume2 className="w-4 h-4 text-amber-500" />
+-            {t.timelineTitle}
+-          </span>
+-          {audioDuration > 0 && <span className="text-[10px] font-mono text-stone-600">{audioDuration.toFixed(1)}s</span>}
+-        </label>
+-        
+-        <div className="flex gap-2">
+-           {transcription.length > 0 && (
+-              <button
+-                onClick={autoSyncElements}
+-                disabled={isSyncing}
+-                className="flex-1 px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-[10px] font-bold uppercase rounded-lg border border-amber-500/20 transition-all flex items-center justify-center gap-2"
+-              >
+-                {isSyncing ? <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
+-                {t.autoSync}
+-              </button>
+-           )}
+-        </div>
+-
+-        {isTranscribing ? (
+-          <div className="flex flex-col items-center gap-3 py-6 bg-stone-900/30 rounded-xl border border-white/5">
+-             <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+-             <span className="text-[10px] text-stone-500 animate-pulse">{t.transcribing}</span>
+-          </div>
+-        ) : transcription.length > 0 ? (
+-          <div className="space-y-3">
+-            <div className="flex flex-wrap gap-2 p-3 bg-stone-900/40 rounded-xl border border-white/5 max-h-72 overflow-y-auto custom-scrollbar">
+-              {transcription.map((w, idx) => {
+-                const mappedEl = elements.find(el => el.wordIndex === idx);
+-                const isSelectedForWord = elements.find(el => el.id === selectedElementId)?.wordIndex === idx;
+-                
+-                return (
+-                  <button
+-                    key={idx}
+-                    onClick={() => selectedElementId && mapElementToWord(selectedElementId, idx)}
+-                    className={cn(
+-                      "px-3 py-2 text-xs rounded-lg transition-all border whitespace-nowrap",
+-                      isSelectedForWord
+-                        ? "bg-amber-500 border-amber-400 text-black font-bold shadow-[0_0_15px_rgba(251,191,36,0.4)]"
+-                        : mappedEl
+-                        ? "bg-amber-500/20 border-amber-500/30 text-amber-400"
+-                        : "bg-black/40 border-stone-800 text-stone-500 hover:border-stone-600 hover:text-stone-300"
+-                    )}
+-                  >
+-                    {w.word}
+-                  </button>
+-                );
+-              })}
+-            </div>
+-            <p className="text-[10px] text-stone-600 italic px-1 text-center bg-stone-900/40 py-2 rounded-lg">
+-              {t.mapHelp}
+-            </p>
+-          </div>
+-        ) : (
+-          <div className="p-6 bg-stone-900/20 rounded-xl border border-dashed border-stone-800 text-center flex flex-col gap-2">
+-            <Play className="w-5 h-5 text-stone-800 mx-auto" />
+-            <span className="text-[10px] text-stone-700">Awaiting transcription result...</span>
+-          </div>
+-        )}
+-      </div>
+-    );
+-  };
+-
+-  return (
+-    <div className={cn("flex flex-col h-screen bg-[#050505] text-stone-200 font-sans overflow-hidden selection:bg-amber-500/30", isRtl ? "rtl" : "ltr")} dir={isRtl ? 'rtl' : 'ltr'}>
++return (
++    <div className={cn("flex flex-col h-screen bg-[#f4f5f8] text-slate-800 font-sans overflow-hidden selection:bg-indigo-500/30", isRtl ? "rtl" : "ltr")} dir={isRtl ? 'rtl' : 'ltr'}>
+       
+       {/* Header */}
+-      <header className="h-16 px-8 flex items-center justify-between border-b border-white/5 bg-[#080808] shrink-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
++      <header className="h-16 px-8 flex items-center justify-between border-b border-slate-200 bg-white shrink-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+         <div className="flex items-center gap-4">
+-          <div className="w-8 h-8 rounded-full border border-amber-500/50 flex items-center justify-center">
+-            <div className="w-1.5 h-1.5 bg-amber-400 rounded-full shadow-[0_0_8px_#fbbf24] animate-pulse"></div>
++          <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
++            <div className="w-2 h-2 bg-indigo-600 rounded-full shadow-[0_0_8px_rgba(79,70,229,0.4)] animate-pulse"></div>
+           </div>
+-          <span className="text-xl font-light tracking-[0.2em] uppercase" style={{ fontFamily: "'Georgia', serif" }}>
+-            Pen-Reveal <span className="text-stone-500">Studio</span>
++          <span className="text-lg font-bold tracking-tight text-slate-800 font-display">
++            Pen-Reveal <span className="text-indigo-600 font-normal">Studio</span>
+           </span>
+         </div>
+         
+         {/* Progress Bar for Rendering/Exporting */}
+         {(isExporting || isProcessing) && (
+           <div className="flex-1 max-w-xs mx-8 flex flex-col gap-1">
+-            <div className="flex justify-between text-[9px] tracking-wider uppercase font-bold text-amber-500">
++            <div className="flex justify-between text-[9px] tracking-wider uppercase font-bold text-indigo-600">
+               <span>{progress.text}</span>
+               <span>{progress.percentage}%</span>
+             </div>
+-            <div className="w-full bg-stone-850 rounded-full h-1 overflow-hidden">
+-              <div className="bg-amber-500 h-full transition-all duration-300 ease-out" style={{ width: `${progress.percentage}%` }} />
++            <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
++              <div className="bg-indigo-600 h-full transition-all duration-300 ease-out" style={{ width: `${progress.percentage}%` }} />
+             </div>
+           </div>
+         )}
+@@ -2300,18 +2235,18 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
+           {/* Language Switcher */}
+           <button 
+             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded bg-stone-900 border border-stone-800 text-stone-300 hover:bg-stone-800 transition-colors cursor-pointer"
++            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shadow-sm"
+           >
+-            <Languages className="w-3.5 h-3.5 text-amber-500" />
++            <Languages className="w-3.5 h-3.5 text-indigo-600" />
+             {lang === 'en' ? 'عربي' : 'English'}
+           </button>
+ 
+           {/* Share Option */}
+           <button 
+             onClick={() => setIsShareModalOpen(true)}
+-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded bg-amber-500/10 border border-amber-500/20 text-amber-550 hover:bg-amber-500/20 transition-colors cursor-pointer"
++            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-650 hover:bg-indigo-100/70 transition-colors cursor-pointer shadow-sm"
+           >
+-            <Link className="w-3.5 h-3.5 text-amber-500" />
++            <Link className="w-3.5 h-3.5 text-indigo-600" />
+             {lang === 'en' ? 'Share / Invite' : 'مشاركة / دعوة'}
+           </button>
+           
+@@ -2325,16 +2260,16 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
+               else startAnimation(true);
+             }}
+             className={cn(
+-              "h-9 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer",
++              "h-9 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer shadow-sm",
+               !mainImgUrl || isProcessing || isAnimating || isExporting
+-                ? "bg-stone-905 border-stone-850 text-stone-500 cursor-not-allowed"
+-                : "bg-amber-500 border-amber-500 text-black hover:bg-amber-400 active:scale-[0.98] shadow-sm font-bold"
++                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
++                : "bg-indigo-600 border-indigo-600 hover:bg-indigo-700 text-white active:scale-[0.98] font-bold"
+             )}
+           >
+             {isExporting ? (
+-              <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
++              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+             ) : (
+-              <Download className="w-3.5 h-3.5" />
++              <Download className="w-3.5 h-3.5 text-white" />
+             )}
+             {t.generateExport}
+           </button>
+@@ -2342,544 +2277,380 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
+       </header>
+ 
+       {/* Main Workspace Frame */}
+-      <main className="flex-1 flex overflow-hidden relative">
++      <main className="flex-1 flex overflow-hidden relative bg-[#f4f5f8]">
+         
+-        {/* Left Sidebar (All Controls Co-located) */}
+-        <motion.aside 
+-          id="sidebar-left"
+-          initial={{ x: -100, opacity: 0 }}
+-          animate={{ x: 0, opacity: 1 }}
+-          className="w-full lg:w-[360px] shrink-0 border-r border-white/5 bg-[#080808]/50 p-6 flex flex-col gap-6 overflow-y-auto z-20 custom-scrollbar"
+-        >
+-          <div className="space-y-6">
+-            
+-            {/* 1. Main Image Upload */}
+-            <div className="flex flex-col gap-3">
+-              <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.mainImage}</label>
+-              <label className={cn(
+-                "h-32 w-full border border-dashed rounded-xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all group",
+-                mainImgUrl ? "border-amber-500/50 bg-amber-500/5" : "border-stone-800 bg-stone-900/20 hover:bg-stone-900/40"
+-              )}>
+-                {mainImgUrl ? (
+-                  <img src={mainImgUrl} alt="preview" className="h-20 object-contain rounded-md shadow-lg" />
+-                ) : (
+-                  <div className="w-10 h-10 rounded-full bg-stone-850 flex items-center justify-center group-hover:bg-stone-800 transition-colors">
+-                    <UploadCloud className="w-5 h-5 text-stone-400" />
+-                  </div>
+-                )}
+-                <span className="text-xs text-stone-500">{mainImgUrl ? t.changeAsset : t.dropAsset}</span>
+-                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setMainImgUrl)} />
+-              </label>
+-              
++        {/* Left Canva-style Tab Bar */}
++        <div className="w-20 shrink-0 bg-white border-r border-slate-200 flex flex-col items-center py-6 gap-6 z-30 shadow-[1px_0_3px_rgba(0,0,0,0.015)]">
++          {[
++            { id: 'assets', label: lang === 'en' ? 'Assets' : 'الوسائط', icon: UploadCloud },
++            { id: 'script', label: lang === 'en' ? 'Script' : 'النص والذكاء', icon: Sparkles },
++            { id: 'adjust', label: lang === 'en' ? 'Adjust' : 'التعديل', icon: Settings },
++          ].map((tab) => {
++            const Icon = tab.icon;
++            const isActive = activeLeftTab === tab.id;
++            return (
+               <button
+-                type="button"
+-                onClick={() => {
+-                  setMainImgUrl(DEMO_IMAGE);
+-                  setIsStoryboardImg(false);
+-                }}
+-                className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-amber-500 text-xs font-semibold rounded-lg border border-stone-800 transition-all cursor-pointer text-center shadow-md shadow-amber-500/5"
++                key={tab.id}
++                onClick={() => setActiveLeftTab(activeLeftTab === tab.id ? null : tab.id as any)}
++                className={cn(
++                  "w-14 h-14 rounded-xl flex flex-col items-center justify-center gap-1 transition-all relative group cursor-pointer border",
++                  isActive 
++                    ? "bg-indigo-50 border-indigo-100 text-indigo-650 font-bold" 
++                    : "border-transparent text-slate-400 hover:text-slate-700 hover:bg-slate-50"
++                )}
+               >
+-                {t.loadDemoArt}
++                {isActive && (
++                  <div className={cn(
++                    "absolute top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-650 rounded-full",
++                    isRtl ? "left-0" : "right-0"
++                  )} />
++                )}
++                <Icon className="w-5 h-5" />
++                <span className="text-[9px] font-medium tracking-tight leading-none">{tab.label}</span>
+               </button>
+-            </div>
+-
+-            {/* 2. AI Storyboard Creator (Script-to-Scenes) */}
+-            <div className="p-4 border border-stone-805 bg-stone-950/25 rounded-xl space-y-4">
+-              <span className="text-[10px] font-bold tracking-widest text-amber-500 uppercase flex items-center gap-1.5">
+-                <Sparkles className="w-3.5 h-3.5" />
+-                AI Storyboard Creator
+-              </span>
+-              
+-              {storyboardStatus === 'EMPTY' && (
+-                <div className="space-y-3">
+-                  <textarea
+-                    rows={4}
+-                    value={scriptInput}
+-                    onChange={(e) => setScriptInput(e.target.value)}
+-                    placeholder="Type script here to auto-generate scenes..."
+-                    dir="auto"
+-                    className="w-full bg-[#0a0a0a] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:border-amber-500/50 outline-none resize-none leading-normal shadow-inner"
+-                  />
+-                  <div className="flex gap-2">
+-                    <button
+-                      onClick={handleCreateStoryboard}
+-                      disabled={!scriptInput.trim()}
+-                      className="flex-grow py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black font-bold text-[10.5px] rounded-lg cursor-pointer transition-colors"
+-                    >
+-                      Create Storyboard
+-                    </button>
+-                    <button
+-                      disabled={true}
+-                      className="flex-grow py-2 border border-stone-800 text-stone-500 font-bold text-[10.5px] rounded-lg cursor-not-allowed bg-stone-900/30"
+-                    >
+-                      Edit Storyboard
+-                    </button>
+-                  </div>
+-                </div>
+-              )}
+-
+-              {storyboardStatus === 'PROCESSING' && (
+-                <div className="space-y-3 py-4 flex flex-col items-center justify-center">
+-                  <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+-                  <span className="text-[10px] font-bold text-stone-400 animate-pulse">Generating Storyboard...</span>
+-                </div>
+-              )}
++            );
++          })}
++        </div>
+ 
+-              {storyboardStatus === 'ACTIVE' && (
+-                <div className="space-y-3">
+-                  <div className="flex items-center justify-between">
+-                    <span className="text-[10px] text-stone-400 font-bold">Active Storyboard ({scenes.length} Scenes)</span>
+-                    <button
+-                      onClick={() => {
+-                        setStoryboardStatus('EMPTY');
+-                        setScenes([]);
+-                        setElements([]);
+-                      }}
+-                      className="text-[9px] text-rose-500 hover:text-rose-455 font-bold cursor-pointer"
++        {/* Slideout Drawer Panel */}
++        <AnimatePresence>
++          {activeLeftTab && (
++            <motion.div
++              id="sidebar-left"
++              initial={{ width: 0, opacity: 0 }}
++              animate={{ width: 340, opacity: 1 }}
++              exit={{ width: 0, opacity: 0 }}
++              transition={{ duration: 0.2 }}
++              className="h-full shrink-0 border-r border-slate-200 bg-white z-20 overflow-y-auto flex flex-col custom-scrollbar text-slate-800"
++            >
++              <div className="p-6 flex-1 flex flex-col justify-between">
++                <div className="space-y-6">
++                  
++                  {/* Header Title */}
++                  <div className="flex items-center justify-between pb-4 border-b border-slate-105">
++                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
++                      {activeLeftTab === 'assets' && (lang === 'en' ? 'Asset Management' : 'إدارة الوسائط')}
++                      {activeLeftTab === 'script' && (lang === 'en' ? 'AI Storyboard & Script' : 'لوحة القصة والذكاء')}
++                      {activeLeftTab === 'adjust' && (lang === 'en' ? 'Animation Adjustments' : 'إعدادات الحركة')}
++                    </h3>
++                    <button 
++                      onClick={() => setActiveLeftTab(null)}
++                      className="text-slate-400 hover:text-slate-700 transition-colors text-xs font-semibold cursor-pointer"
+                     >
+-                      Reset
++                      {lang === 'en' ? 'Close' : 'إغلاق'}
+                     </button>
+                   </div>
+ 
+-                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+-                    {scenes.map((scene) => {
+-                      const isSelected = selectedElementId === scene.scene_id;
+-                      return (
+-                        <div
+-                          key={scene.scene_id}
+-                          onClick={() => setSelectedElementId(isSelected ? null : scene.scene_id)}
+-                          className={cn(
+-                            "p-2 rounded-lg border transition-all cursor-pointer flex gap-2 text-[10px]",
+-                            isSelected
+-                              ? "border-amber-500 bg-amber-500/10 text-amber-500 font-bold shadow"
+-                              : "border-stone-850 bg-[#070707] text-stone-450 hover:border-stone-700"
+-                          )}
+-                        >
+-                          <span className="font-bold text-amber-500 shrink-0">#{scene.scene_number}</span>
+-                          <span className="truncate flex-1 text-stone-300">{scene.text}</span>
+-                        </div>
+-                      );
+-                    })}
+-                  </div>
+-
+-                  {selectedElementId && scenes.some(s => s.scene_id === selectedElementId) && (
+-                    <div className="space-y-2 pt-2 border-t border-stone-850">
+-                      <textarea
+-                        rows={2}
+-                        value={activeSceneText}
+-                        onChange={(e) => setActiveSceneText(e.target.value)}
+-                        className="w-full bg-[#0a0a0a] border border-stone-800 rounded-lg p-2 text-[11px] text-stone-200 focus:border-amber-500/50 outline-none resize-none leading-normal"
+-                      />
+-                      <button
+-                        onClick={handleEditStoryboard}
+-                        disabled={storyboardMode === 'EDIT' || !activeSceneText.trim()}
+-                        className="w-full py-1.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black font-semibold text-[10px] rounded-lg transition-all"
+-                      >
+-                        {storyboardMode === 'EDIT' ? "Updating..." : "Edit Storyboard"}
+-                      </button>
+-                    </div>
+-                  )}
+-                </div>
+-              )}
+-            </div>
+-
+-            {/* 3. AI Storyboard Block (Image Generator) */}
+-            <div className="p-4 border border-stone-800 bg-stone-950/25 rounded-xl space-y-4">
+-              <div className="flex items-center justify-between">
+-                <span className="text-[11px] font-bold tracking-wider text-amber-500 uppercase flex items-center gap-1.5">
+-                  <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+-                  {t.aiStoryboardTitle}
+-                </span>
+-              </div>
+-
+-              {/* Image Generator Model Selector */}
+-              <div className="space-y-1.5">
+-                <label className="text-[10px] text-stone-500 font-medium tracking-wide block">{t.aiStoryboardModel}</label>
+-                <div className="flex gap-1 bg-[#101010] p-0.5 rounded-lg border border-stone-800">
+-                  <button
+-                    type="button"
+-                    onClick={() => setUseFreeModel(true)}
+-                    className={cn(
+-                      "flex-1 py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium transition-all text-center cursor-pointer",
+-                      useFreeModel 
+-                        ? "bg-amber-500 text-black font-semibold shadow" 
+-                        : "text-stone-400 hover:text-stone-200 hover:bg-stone-900"
+-                    )}
+-                  >
+-                    {t.aiFreeGeminiModel}
+-                  </button>
+-                  <button
+-                    type="button"
+-                    onClick={() => setUseFreeModel(false)}
+-                    className={cn(
+-                      "flex-1 py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium transition-all text-center cursor-pointer",
+-                      !useFreeModel 
+-                        ? "bg-amber-500 text-black font-semibold shadow" 
+-                        : "text-stone-400 hover:text-stone-200 hover:bg-stone-900"
+-                    )}
+-                  >
+-                    {t.aiPaidImagenModel}
+-                  </button>
+-                </div>
+-              </div>
+-
+-              {/* Style Selector */}
+-              <div className="space-y-1.5">
+-                <label className="text-[10px] text-stone-500 font-medium tracking-wide block">{t.aiStoryboardStyle}</label>
+-                <div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto custom-scrollbar p-1 bg-[#101010] rounded-lg border border-stone-800">
+-                  {['Auto-select', 'Comic Strip', 'Kawaii', 'Clay', 'Sketch Note', 'Anime', 'Editorial', 'Instructional', 'Bento Grid', 'Bricks', 'Scientific', 'Professional'].map((styleOption) => {
+-                    const isSelected = storyboardStyle === styleOption;
+-                    return (
+-                      <button
+-                        key={styleOption}
+-                        type="button"
+-                        onClick={() => setStoryboardStyle(styleOption)}
+-                        className={cn(
+-                          "px-2 py-1 rounded text-[11px] text-left transition-all border border-transparent cursor-pointer",
+-                          isSelected
+-                            ? "bg-amber-500/10 text-amber-500 border-amber-500/20 font-medium"
+-                            : "text-stone-400 hover:text-stone-200 hover:bg-stone-900"
++                  {/* 1. ASSETS TAB CONTENT */}
++                  {activeLeftTab === 'assets' && (
++                    <div className="space-y-6">
++                      {/* AI Storyboard Creator */}
++                      <div className="p-4 border border-slate-200 bg-slate-50/50 rounded-xl space-y-4 shadow-sm">
++                        <span className="text-[10px] font-bold tracking-widest text-indigo-650 uppercase flex items-center gap-1.5">
++                          <Sparkles className="w-3.5 h-3.5" />
++                          AI Storyboard Creator
++                        </span>
++                        
++                        {storyboardStatus === 'EMPTY' && (
++                          <div className="space-y-3">
++                            <textarea
++                              rows={4}
++                              value={scriptInput}
++                              onChange={(e) => setScriptInput(e.target.value)}
++                              placeholder="Type script here to auto-generate scenes..."
++                              dir="auto"
++                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs text-slate-800 focus:border-indigo-500/50 outline-none resize-none leading-normal shadow-inner"
++                            />
++                            <div className="flex gap-2">
++                              <button
++                                onClick={handleCreateStoryboard}
++                                disabled={!scriptInput.trim()}
++                                className="flex-grow py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-[10.5px] rounded-lg cursor-pointer transition-colors shadow-sm"
++                              >
++                                Create Storyboard
++                              </button>
++                              <button
++                                disabled={true}
++                                className="flex-grow py-2 border border-slate-200 text-slate-400 font-bold text-[10.5px] rounded-lg cursor-not-allowed bg-slate-100"
++                              >
++                                Edit Storyboard
++                              </button>
++                            </div>
++                          </div>
+                         )}
+-                      >
+-                        {styleOption}
+-                      </button>
+-                    );
+-                  })}
+-                </div>
+-              </div>
+ 
+-              {/* Generate Storyboard Button */}
+-              <button
+-                type="button"
+-                disabled={isGeneratingStoryboard}
+-                onClick={generateStoryboardImage}
+-                className={cn(
+-                  "w-full h-9 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer",
+-                  isGeneratingStoryboard
+-                    ? "bg-stone-900 border-stone-800 text-stone-400 cursor-not-allowed"
+-                    : transcription.length === 0
+-                    ? "bg-stone-900/40 border-stone-900/30 text-stone-500 hover:text-stone-400 cursor-help"
+-                    : "bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:opacity-90 active:scale-[0.98] shadow-lg shadow-amber-500/10 border-amber-500"
+-                )}
+-                title={transcription.length === 0 ? t.aiStoryboardNoTranscription : ""}
+-              >
+-                {isGeneratingStoryboard ? (
+-                  <>
+-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
+-                    <span className="text-[11px] truncate max-w-[200px]">{t.aiStoryboardGenerating}</span>
+-                  </>
+-                ) : (
+-                  <>
+-                    <Sparkles className="w-3.5 h-3.5 text-amber-455" />
+-                    <span>{t.aiStoryboardGenBtn}</span>
+-                  </>
+-                )}
+-              </button>
+-
+-              {storyboardError && (
+-                <div role="alert" className="p-2 border border-rose-500/20 bg-rose-500/5 rounded-lg text-[10px] text-rose-455 leading-relaxed font-medium">
+-                  {storyboardError}
+-                </div>
+-              )}
+-
+-              {storyboardPrompt && (
+-                <details className="text-[9px] text-stone-500 bg-[#0d0d0d] p-2 rounded-lg border border-stone-900/50 cursor-pointer">
+-                  <summary className="font-semibold text-stone-400 focus:outline-none">{t.aiStoryboardPromptUsed}</summary>
+-                  <p className="mt-1 leading-normal text-stone-400 italic whitespace-pre-wrap">{storyboardPrompt}</p>
+-                </details>
+-              )}
+-            </div>
+-
+-            {/* 4. Gemini 2.5 Image Editor */}
+-            <div className="p-4 border border-stone-800 bg-[#0c0c0c]/90 rounded-xl space-y-4">
+-              <div className="flex items-center justify-between">
+-                <span className="text-[11px] font-bold tracking-wider text-amber-500 uppercase flex items-center gap-1.5">
+-                  <Brush className="w-3.5 h-3.5 text-amber-400" />
+-                  {t.geminiEditTitle}
+-                </span>
+-                <span className="text-[8px] bg-amber-500/15 text-amber-500 font-mono py-0.5 px-1.5 rounded-full border border-amber-500/25">
+-                  Gemini-2.5
+-                </span>
+-              </div>
++                        {storyboardStatus === 'PROCESSING' && (
++                          <div className="space-y-3 py-4 flex flex-col items-center justify-center">
++                            <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
++                            <span className="text-[10px] font-bold text-slate-500 animate-pulse">Generating Storyboard...</span>
++                          </div>
++                        )}
+ 
+-              {!mainImgUrl ? (
+-                <div className="text-stone-500 text-[10px] leading-relaxed italic bg-[#050505] p-3 rounded-lg border border-stone-900 text-center">
+-                  {t.geminiNoImageError}
+-                </div>
+-              ) : (
+-                <div className="space-y-3">
+-                  <div className="relative h-16 w-full rounded-lg overflow-hidden border border-stone-850 bg-[#050505] flex items-center justify-center p-1">
+-                    <img src={mainImgUrl} alt="Active scene" className="h-full object-contain max-w-full opacity-60 rounded" />
+-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-center pb-1">
+-                      <span className="text-[9px] text-stone-400 font-semibold tracking-wide uppercase">Active Image Target</span>
+-                    </div>
+-                  </div>
++                        {storyboardStatus === 'ACTIVE' && (
++                          <div className="space-y-3">
++                            <div className="flex items-center justify-between">
++                              <span className="text-[10px] text-slate-500 font-bold">Active Storyboard ({scenes.length} Scenes)</span>
++                              <button
++                                onClick={() => {
++                                  setStoryboardStatus('EMPTY');
++                                  setScenes([]);
++                                  setElements([]);
++                                }}
++                                className="text-[9px] text-rose-600 hover:text-rose-700 font-bold cursor-pointer"
++                              >
++                                Reset
++                              </button>
++                            </div>
+ 
+-                  <div className="space-y-1.5">
+-                    <textarea
+-                      value={editPrompt}
+-                      onChange={(e) => setEditPrompt(e.target.value)}
+-                      placeholder={t.geminiEditInputPlaceholder}
+-                      rows={2}
+-                      className="w-full text-xs bg-[#101010] text-stone-200 border border-stone-800 rounded-lg p-2.5 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/20 outline-none resize-none placeholder:text-stone-650 leading-relaxed font-sans"
+-                    />
+-                  </div>
++                            <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
++                              {scenes.map((scene) => {
++                                const isSelected = selectedElementId === scene.scene_id;
++                                return (
++                                  <div
++                                    key={scene.scene_id}
++                                    onClick={() => setSelectedElementId(isSelected ? null : scene.scene_id)}
++                                    className={cn(
++                                      "p-2 rounded-lg border transition-all cursor-pointer flex gap-2 text-[10px]",
++                                      isSelected
++                                        ? "border-indigo-500 bg-indigo-50/70 text-indigo-650 font-bold shadow-sm"
++                                        : "border-slate-200 bg-white text-slate-650 hover:border-slate-350"
++                                    )}
++                                  >
++                                    <span className="font-bold text-indigo-655 shrink-0">#{scene.scene_number}</span>
++                                    <span className="truncate flex-1 text-slate-700">{scene.text}</span>
++                                  </div>
++                                );
++                              })}
++                            </div>
+ 
+-                  <button
+-                    type="button"
+-                    disabled={isEditingImage || !editPrompt.trim()}
+-                    onClick={handleEditImageWithGemini}
+-                    className={cn(
+-                      "w-full h-9 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer",
+-                      isEditingImage
+-                        ? "bg-stone-900 border-stone-800 text-stone-400 cursor-not-allowed"
+-                        : !editPrompt.trim()
+-                        ? "bg-stone-900/40 border-stone-900/30 text-stone-500 cursor-not-allowed"
+-                        : "bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:opacity-90 active:scale-[0.98] shadow-lg shadow-amber-500/10 border-amber-500"
+-                    )}
+-                  >
+-                    {isEditingImage ? (
+-                      <>
+-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
+-                        <span className="text-[11px] truncate">{editStatus || t.geminiEditing}</span>
+-                      </>
+-                    ) : (
+-                      <>
+-                        <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+-                        <span>{t.geminiEditBtn}</span>
+-                      </>
+-                    )}
+-                  </button>
++                            {selectedElementId && scenes.some(s => s.scene_id === selectedElementId) && (
++                              <div className="space-y-2 pt-2 border-t border-slate-100">
++                                <textarea
++                                  rows={2}
++                                  value={activeSceneText}
++                                  onChange={(e) => setActiveSceneText(e.target.value)}
++                                  className="w-full bg-white border border-slate-200 rounded-lg p-2 text-[11px] text-slate-805 focus:border-indigo-500/50 outline-none resize-none leading-normal shadow-inner"
++                                />
++                                <button
++                                  onClick={handleEditStoryboard}
++                                  disabled={storyboardMode === 'EDIT' || !activeSceneText.trim()}
++                                  className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-[10px] rounded-lg transition-all shadow-sm"
++                                >
++                                  {storyboardMode === 'EDIT' ? "Updating..." : "Edit Storyboard"}
++                                </button>
++                              </div>
++                            )}
++                          </div>
++                        )}
++                      </div>
+ 
+-                  {editError && (
+-                    <div role="alert" className="p-2.5 border border-rose-500/20 bg-rose-500/5 rounded-lg text-[10px] text-rose-455 leading-relaxed font-medium">
+-                      {editError}
+-                    </div>
+-                  )}
+-                </div>
+-              )}
+-            </div>
++                      {/* Custom Media Uploads */}
++                      <div className="space-y-5 border-t border-slate-100 pt-4">
++                        <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
++                          Custom Media Uploads
++                        </span>
++                        
++                        {/* Main Image Upload */}
++                        <div className="flex flex-col gap-2.5">
++                          <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t.mainImage}</label>
++                          <label className={cn(
++                            "h-32 w-full border border-dashed rounded-xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all group",
++                            mainImgUrl ? "border-indigo-500 bg-indigo-50/10" : "border-slate-200 bg-slate-50 hover:bg-slate-100/70"
++                          )}>
++                            {mainImgUrl ? (
++                              <img src={mainImgUrl} alt="preview" className="h-20 object-contain rounded-md shadow-sm" />
++                            ) : (
++                              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors text-slate-400">
++                                <UploadCloud className="w-5 h-5" />
++                              </div>
++                            )}
++                            <span className="text-xs text-slate-500">{mainImgUrl ? t.changeAsset : t.dropAsset}</span>
++                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setMainImgUrl)} />
++                          </label>
++                          <button
++                            type="button"
++                            onClick={() => {
++                              setMainImgUrl(DEMO_IMAGE);
++                              setIsStoryboardImg(false);
++                            }}
++                            className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-indigo-650 text-xs font-semibold rounded-lg border border-slate-200 transition-all cursor-pointer text-center shadow-sm"
++                          >
++                            {t.loadDemoArt}
++                          </button>
++                        </div>
+ 
+-            {/* 5. Pen Overlay (Optional) */}
+-            <div className="flex flex-col gap-3">
+-              <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.penOverlay}</label>
+-              <label className={cn(
+-                "flex flex-col items-center gap-2 p-4 border rounded-xl cursor-pointer transition-colors",
+-                "border-stone-800 bg-[#0a0a0a] hover:border-amber-500/50"
+-              )}>
+-                <span className="text-xs text-stone-400 flex items-center gap-2">
+-                  <ImageIcon className="w-4 h-4 text-stone-500" />
+-                  {t.selectPen}
+-                </span>
+-                <input type="file" accept="image/png" className="hidden" onChange={(e) => handleImageUpload(e, setPenImgUrl)} />
+-              </label>
+-            </div>
++                        {/* Pen Overlay */}
++                        <div className="flex flex-col gap-2.5">
++                          <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t.penOverlay}</label>
++                          <label className={cn(
++                            "flex flex-col items-center gap-2 p-4 border border-dashed rounded-xl cursor-pointer transition-colors",
++                            "border-slate-200 bg-slate-550 hover:bg-slate-100/70"
++                          )}>
++                            <span className="text-xs text-slate-500 flex items-center gap-2">
++                              <ImageIcon className="w-4 h-4 text-slate-400" />
++                              {t.selectPen}
++                            </span>
++                            <input type="file" accept="image/png" className="hidden" onChange={(e) => handleImageUpload(e, setPenImgUrl)} />
++                          </label>
++                        </div>
+ 
+-            {/* 6. Audio Asset */}
+-            <div className="flex flex-col gap-3">
+-              <div className="flex justify-between items-center">
+-                 <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.audioTitle}</label>
+-                 <div className="flex rounded bg-stone-900 border border-stone-800 p-0.5 gap-0.5">
+-                   <button 
+-                     onClick={() => setScriptMode('upload')}
+-                     className={cn("px-2 py-0.5 text-[9px] rounded transition-all cursor-pointer", scriptMode === 'upload' ? "bg-stone-800 text-amber-500 font-semibold" : "text-stone-500 hover:text-stone-400")}
+-                   >
+-                     {t.uploadAudioTab}
+-                   </button>
+-                   <button 
+-                     onClick={() => setScriptMode('text')}
+-                     className={cn("px-2 py-0.5 text-[9px] rounded transition-all cursor-pointer", scriptMode === 'text' ? "bg-stone-800 text-amber-500 font-semibold" : "text-stone-500 hover:text-stone-400")}
+-                   >
+-                     {t.writeScriptTab}
+-                   </button>
+-                 </div>
+-              </div>
++                        {/* Audio Asset */}
++                        <div className="flex flex-col gap-2.5">
++                          <div className="flex justify-between items-center">
++                            <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t.audioTitle}</label>
++                            <div className="flex rounded bg-slate-100 border border-slate-200 p-0.5 gap-0.5 shadow-sm">
++                              <button 
++                                onClick={() => setScriptMode('upload')}
++                                className={cn("px-2 py-0.5 text-[9px] rounded transition-all cursor-pointer", scriptMode === 'upload' ? "bg-white text-indigo-650 font-semibold shadow-sm" : "text-slate-500 hover:text-slate-700")}
++                              >
++                                {t.uploadAudioTab}
++                              </button>
++                              <button 
++                                onClick={() => setScriptMode('text')}
++                                className={cn("px-2 py-0.5 text-[9px] rounded transition-all cursor-pointer", scriptMode === 'text' ? "bg-white text-indigo-655 font-semibold shadow-sm" : "text-slate-505 hover:text-slate-700")}
++                              >
++                                {t.writeScriptTab}
++                              </button>
++                            </div>
++                          </div>
+ 
+-              {scriptMode === 'upload' ? (
+-                <label htmlFor="audio-upload" className={cn(
+-                  "flex flex-col items-center gap-2 p-4 border rounded-xl cursor-pointer transition-colors",
+-                  audioUrl ? "border-amber-500/50 bg-amber-500/5" : "border-stone-800 bg-[#0a0a0a] hover:border-amber-500/50"
+-                )}>
+-                  <span className="text-xs text-stone-400 flex items-center gap-2">
+-                    {isTranscribing ? <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" /> : <Play className="w-4 h-4 text-stone-500" />}
+-                    {audioUrl ? "Audio Active" : t.selectAudio}
+-                  </span>
+-                  <input id="audio-upload" type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
+-                </label>
+-              ) : (
+-                <div className="flex flex-col gap-2.5 p-3 border border-stone-800 bg-[#070707] rounded-xl">
+-                  <div className="flex justify-between items-center">
+-                    <span className="text-[9px] text-stone-500 font-bold uppercase">{t.narratorVoiceName}</span>
+-                    <select
+-                      value={voiceName}
+-                      onChange={(e) => setVoiceName(e.target.value)}
+-                      className="bg-stone-900 border border-stone-800 text-stone-300 text-[10px] rounded px-1.5 py-0.5 outline-none focus:border-amber-500 cursor-pointer font-semibold"
+-                    >
+-                      <option value="Kore">Kore (Warm Male)</option>
+-                      <option value="Puck">Puck (Rich Male)</option>
+-                      <option value="Fenrir">Fenrir (Deep Storyteller)</option>
+-                      <option value="Charon">Charon (Calm Male)</option>
+-                      <option value="Aoede">Aoede (Narrative Female)</option>
+-                    </select>
+-                  </div>
+-                  
+-                  <textarea
+-                    rows={3}
+-                    value={scriptText}
+-                    onChange={(e) => setScriptText(e.target.value)}
+-                    placeholder={t.scriptPlaceholder}
+-                    dir="auto"
+-                    className="w-full bg-[#0a0a0a] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:border-amber-500/50 outline-none resize-none leading-relaxed"
+-                  />
+-                  
+-                  <button
+-                    onClick={generateNarratorVoice}
+-                    disabled={isGeneratingVoice || !scriptText.trim()}
+-                    className="w-full flex justify-center items-center gap-2 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black font-bold text-[11px] rounded-lg transition-all shadow-md active:scale-[0.98] cursor-pointer"
+-                  >
+-                    {isGeneratingVoice ? (
+-                      <>
+-                        <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />
+-                        <span>{t.generatingVoice}</span>
+-                      </>
+-                    ) : (
+-                      <span>{t.generateVoiceBtn}</span>
+-                    )}
+-                  </button>
++                          {scriptMode === 'upload' ? (
++                            <label htmlFor="audio-upload" className={cn(
++                              "flex flex-col items-center gap-2 p-4 border border-dashed rounded-xl cursor-pointer transition-colors",
++                              audioUrl ? "border-indigo-500 bg-indigo-50/10" : "border-slate-200 bg-slate-50 hover:bg-slate-100/70"
++                            )}>
++                              <span className="text-xs text-slate-505 flex items-center gap-2">
++                                {isTranscribing ? <div className="w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" /> : <Play className="w-4 h-4 text-slate-400" />}
++                                {audioUrl ? "Audio Active" : t.selectAudio}
++                              </span>
++                              <input id="audio-upload" type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
++                            </label>
++                          ) : (
++                            <div className="flex flex-col gap-2.5 p-3 border border-slate-200 bg-slate-50/50 rounded-xl">
++                              <div className="flex justify-between items-center">
++                                <span className="text-[9px] text-slate-550 font-bold uppercase">{t.narratorVoiceName}</span>
++                                <select
++                                  value={voiceName}
++                                  onChange={(e) => setVoiceName(e.target.value)}
++                                  className="bg-white border border-slate-200 text-slate-700 text-[10px] rounded px-1.5 py-0.5 outline-none focus:border-indigo-500 cursor-pointer font-semibold shadow-sm"
++                                >
++                                  <option value="Kore">Kore (Warm Male)</option>
++                                  <option value="Puck">Puck (Rich Male)</option>
++                                  <option value="Fenrir">Fenrir (Deep Storyteller)</option>
++                                  <option value="Charon">Charon (Calm Male)</option>
++                                  <option value="Aoede">Aoede (Narrative Female)</option>
++                                </select>
++                              </div>
++                              
++                              <textarea
++                                rows={3}
++                                value={scriptText}
++                                onChange={(e) => setScriptText(e.target.value)}
++                                placeholder={t.scriptPlaceholder}
++                                dir="auto"
++                                className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs text-slate-800 focus:border-indigo-500/50 outline-none resize-none leading-relaxed shadow-inner"
++                              />
++                              
++                              <button
++                                onClick={generateNarratorVoice}
++                                disabled={isGeneratingVoice || !scriptText.trim()}
++                                className="w-full flex justify-center items-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-[11px] rounded-lg transition-all shadow active:scale-[0.98] cursor-pointer"
++                              >
++                                {isGeneratingVoice ? (
++                                  <>
++                                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
++                                    <span>{t.generatingVoice}</span>
++                                  </>
++                                ) : (
++                                  <span>{t.generateVoiceBtn}</span>
++                                )}
++                              </button>
+ 
+-                  {audioUrl && (
+-                    <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex flex-col gap-1 text-[10px] text-amber-500 font-mono">
+-                      <span>🎤 Story Voiceover Loaded</span>
+-                      <audio src={audioUrl} controls className="w-full h-8 scale-95 mt-1" />
++                              {audioUrl && (
++                                <div className="p-2 bg-indigo-50/50 border border-indigo-100 rounded-lg flex flex-col gap-1 text-[10px] text-indigo-650 font-mono">
++                                  <span>🎤 Story Voiceover Loaded</span>
++                                  <audio src={audioUrl} controls className="w-full h-8 scale-95 mt-1" />
++                                </div>
++                              )}
++                            </div>
++                          )}
++                        </div>
++                      </div>
+                     </div>
+                   )}
+-                </div>
+-              )}
+-            </div>
+ 
+-            {/* 7. Animation Logic */}
+-            <div className="space-y-4 pt-2">
+-              <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.animationLogic}</label>
+-              
+-              <div className="flex bg-stone-900 rounded-lg p-1 gap-1">
+-                <button
+-                  onClick={() => {
+-                    setColorMode('outline');
+-                    if (mainImgUrl) {
+-                      setTimeout(() => {
+-                        prepareAnimation();
+-                      }, 50);
+-                    }
+-                  }}
+-                  className={cn("flex-1 py-1.5 text-[10px] rounded leading-none transition-colors cursor-pointer font-medium", colorMode === 'outline' ? "bg-stone-800 text-amber-500" : "text-stone-500 hover:text-stone-300")}
+-                >
+-                  {t.drawOutline}
+-                </button>
+-                <button
+-                  onClick={() => {
+-                    setColorMode('paint');
+-                    if (mainImgUrl) {
+-                      setTimeout(() => {
+-                        prepareAnimation();
+-                      }, 50);
+-                    }
+-                  }}
+-                  className={cn("flex-1 py-1.5 text-[10px] rounded leading-none transition-colors cursor-pointer font-medium", colorMode === 'paint' ? "bg-stone-800 text-amber-500" : "text-stone-500 hover:text-stone-300")}
+-                >
+-                  {t.paintOriginal}
+-                </button>
+-              </div>
+-
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-350">{t.drawDirection}</label>
+-                <select 
+-                  className="bg-stone-900 border border-stone-800 text-stone-300 text-xs rounded-lg p-2 outline-none focus:border-amber-500 cursor-pointer font-semibold"
+-                  value={drawDirection}
+-                  onChange={(e) => setDrawDirection(e.target.value as any)}
+-                >
+-                  <option value="default">{t.dirDefault}</option>
+-                  <option value="ltr">{t.dirLTR}</option>
+-                  <option value="rtl">{t.dirRTL}</option>
+-                  <option value="ttb">{t.dirTTB}</option>
+-                  <option value="btt">{t.dirBTT}</option>
+-                </select>
+-              </div>
+-
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-355">{t.canvasBg}</label>
+-                <select
+-                  className="bg-stone-900 border border-stone-800 text-stone-300 text-xs rounded-lg p-2 outline-none focus:border-amber-500 cursor-pointer font-semibold"
+-                  value={canvasBgColor}
+-                  onChange={(e) => setCanvasBgColor(e.target.value)}
+-                >
+-                  <option value="#050505">{t.bgBlack}</option>
+-                  <option value="#ffffff">{t.bgWhite}</option>
+-                  <option value="transparent">{t.bgTrans}</option>
+-                </select>
+-              </div>
+-
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-355 flex justify-between">
+-                  <span>{t.penSpeed}</span>
+-                  <span className="text-[10px] font-mono text-amber-500">{defaultPenSpeed}</span>
+-                </label>
+-                <input type="range" min="1" max="100" value={defaultPenSpeed} onChange={(e) => setDefaultPenSpeed(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
+-              </div>
+-
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-355 flex justify-between">
+-                  <span>{t.edgeSensitivity}</span>
+-                  <span className="text-[10px] font-mono text-amber-500">{edgeSensitivity}%</span>
+-                </label>
+-                <input type="range" min="1" max="100" value={edgeSensitivity} onChange={(e) => setEdgeSensitivity(Number(e.target.value))} onMouseUp={() => { if (mainImgUrl) prepareAnimation(); }} onTouchEnd={() => { if (mainImgUrl) prepareAnimation(); }} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
+-              </div>
+-
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-355 flex justify-between">
+-                  <span>{t.bloomRadius}</span>
+-                  <span className="text-[10px] font-mono text-amber-500">{glowSize}px</span>
+-                </label>
+-                <input type="range" min="0" max="100" value={glowSize} onChange={(e) => setGlowSize(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
+-              </div>
+-              
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-355 flex justify-between">
+-                  <span>{t.baseOpacity}</span>
+-                  <span className="text-[10px] font-mono text-amber-500">{baseOpacity}%</span>
+-                </label>
+-                <input type="range" min="0" max="50" value={baseOpacity} onChange={(e) => setBaseOpacity(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
+-              </div>
+-            </div>
++                  {/* 2. SCRIPT TAB CONTENT */}
++                  {activeLeftTab === 'script' && (
++                    <div className="space-y-6">
++                      {/* AI Storyboard Block */}
++                      <div className="p-4 border border-slate-200 bg-slate-50/50 rounded-xl space-y-4 shadow-sm">
++                        <span className="text-[11px] font-bold tracking-wider text-indigo-650 uppercase flex items-center gap-1.5">
++                          <Sparkles className="w-3.5 h-3.5 animate-pulse" />
++                          {t.aiStoryboardTitle}
++                        </span>
+ 
+-            {/* 8. Transcription mapping Timeline Mapping */}
+-            <TimelineMapping />
++                        {/* Image Generator Model Selector */}
++                        <div className="space-y-1.5">
++                          <label className="text-[10px] text-slate-500 font-medium tracking-wide block">{t.aiStoryboardModel}</label>
++                          <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-inner">
++                            <button
++                              type="button"
++                              onClick={() => setUseFreeModel(true)}
++                              className={cn(
++                                "flex-1 py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium transition-all text-center cursor-pointer",
++                                useFreeModel 
++                                  ? "bg-white text-indigo-650 font-semibold shadow-sm" 
++                                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50"
++                              )}
++                            >
++                              {t.aiFreeGeminiModel}
++                            </button>
++                            <button
++                              type="button"
++                              onClick={() => setUseFreeModel(false)}
++                              className={cn(
++                                "flex-1 py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium transition-all text-center cursor-pointer",
++                                !useFreeModel 
++                                  ? "bg-white text-indigo-650 font-semibold shadow-sm" 
++                                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50"
++                              )}
++                            >
++                              {t.aiPaidImagenModel}
++                            </button>
++                          </div>
++                        </div>
+ 
+-            {/* 9. Pen Calibration */}
+-            <div className="space-y-4 pt-2 border-t border-white/5">
+-              <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.penCalibration}</label>
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-300 flex justify-between">
+-                  <span>{t.scale}</span>
+-                  <span className="text-[10px] font-mono text-amber-500">{penScale}%</span>
+-                </label>
+-                <input type="range" min="5" max="50" value={penScale} onChange={(e) => setPenScale(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
+-              </div>
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-300 flex justify-between">
+-                  <span>{t.tipXOffset}</span>
+-                  <span className="text-[10px] font-mono text-amber-500">{penOffsetX}%</span>
+-                </label>
+-                <input type="range" min="0" max="100" value={penOffsetX} onChange={(e) => setPenOffsetX(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
+-              </div>
+-              <div className="flex flex-col gap-1">
+-                <label className="text-xs text-stone-300 flex justify-between">
+-                  <span>{t.tipYOffset}</span>
+-                  <span className="text-[10px] font-mono text-amber-500">{penOffsetY}%</span>
+-                </label>
+-                <input type="range" min="0" max="100" value={penOffsetY} onChange={(e) => setPenOffsetY(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
+-              </div>
+-            </div>
++                        {/* Style Selector */}
++                        <div className="space-y-1.5">
++                          <label className="text-[10px] text-slate-505 font-medium tracking-wide block">{t.aiStoryboardStyle}</label>
++                          <div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto custom-scrollbar p-1 bg-slate-100 rounded-lg border border-slate-200">
++                            {['Auto-select', 'Comic Strip', 'Kawaii', 'Clay', 'Sketch Note', 'Anime', 'Editorial', 'Instructional', 'Bento Grid', 'Bricks', 'Scientific', 'Professional'].map((styleOption) => {
++                              const isSelected = storyboardStyle === styleOption;
++                              return (
++                                <button
++                                  key={styleOption}
++                                  type="button"
++                                  onClick={() => setStoryboardStyle(styleOption)}
++                                  className={cn(
++                                    "px-2 py-1 rounded text-[11px] text-left transition-all border border-transparent cursor-pointer",
++                                    isSelected
++                                      ? "bg-white text-indigo-650 border-indigo-100 font-medium shadow-sm"
++                                      : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50"
++                                  )}
++                                >
++                                  {styleOption}
++                                </button>
++                              );
++                            })}
++                          </div>
++                        </div>
+ 
++                        {/* Generate Storyboard Button */}
++                        <button
++                          type="button"
++                          disabled={isGeneratingStoryboard}
++                          onClick={generateStoryboardImage}
++                          className={cn(
+             {/* 10. Bottom Actions inside Sidebar */}
+             <div className="mt-auto space-y-3 pt-6 border-t border-white/5">
+               <button

@@ -2207,9 +2207,10 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
         <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase flex items-center justify-between">
           <span className="flex items-center gap-2">
             <Volume2 className="w-4 h-4 text-amber-500" />
+            <Volume2 className="w-4 h-4 text-indigo-600" />
             {t.timelineTitle}
           </span>
-          {audioDuration > 0 && <span className="text-[10px] font-mono text-stone-600">{audioDuration.toFixed(1)}s</span>}
+          {audioDuration > 0 && <span className="text-[10px] font-mono text-slate-400">{audioDuration.toFixed(1)}s</span>}
         </label>
         
         <div className="flex gap-2">
@@ -2217,22 +2218,22 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
               <button
                 onClick={autoSyncElements}
                 disabled={isSyncing}
-                className="flex-1 px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-[10px] font-bold uppercase rounded-lg border border-amber-500/20 transition-all flex items-center justify-center gap-2"
+                className="flex-1 px-3 py-2 bg-indigo-50 hover:bg-indigo-100/70 text-indigo-700 text-[10px] font-bold uppercase rounded-lg border border-indigo-100 transition-all flex items-center justify-center gap-2 shadow-sm"
               >
-                {isSyncing ? <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
+                {isSyncing ? <div className="w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
                 {t.autoSync}
               </button>
            )}
         </div>
 
         {isTranscribing ? (
-          <div className="flex flex-col items-center gap-3 py-6 bg-stone-900/30 rounded-xl border border-white/5">
-             <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-             <span className="text-[10px] text-stone-500 animate-pulse">{t.transcribing}</span>
+          <div className="flex flex-col items-center gap-3 py-6 bg-slate-50 rounded-xl border border-slate-100">
+             <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+             <span className="text-[10px] text-slate-500 animate-pulse">{t.transcribing}</span>
           </div>
         ) : transcription.length > 0 ? (
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-2 p-3 bg-stone-900/40 rounded-xl border border-white/5 max-h-72 overflow-y-auto custom-scrollbar">
+            <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 max-h-72 overflow-y-auto custom-scrollbar">
               {transcription.map((w, idx) => {
                 const mappedEl = elements.find(el => el.wordIndex === idx);
                 const isSelectedForWord = elements.find(el => el.id === selectedElementId)?.wordIndex === idx;
@@ -2242,12 +2243,12 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                     key={idx}
                     onClick={() => selectedElementId && mapElementToWord(selectedElementId, idx)}
                     className={cn(
-                      "px-3 py-2 text-xs rounded-lg transition-all border whitespace-nowrap",
+                      "px-3 py-2 text-xs rounded-lg transition-all border whitespace-nowrap shadow-sm",
                       isSelectedForWord
-                        ? "bg-amber-500 border-amber-400 text-black font-bold shadow-[0_0_15px_rgba(251,191,36,0.4)]"
+                        ? "bg-indigo-600 border-indigo-600 text-white font-bold"
                         : mappedEl
-                        ? "bg-amber-500/20 border-amber-500/30 text-amber-400"
-                        : "bg-black/40 border-stone-800 text-stone-500 hover:border-stone-600 hover:text-stone-300"
+                        ? "bg-indigo-50 border-indigo-100 text-indigo-700"
+                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
                     )}
                   >
                     {w.word}
@@ -2255,14 +2256,14 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                 );
               })}
             </div>
-            <p className="text-[10px] text-stone-600 italic px-1 text-center bg-stone-900/40 py-2 rounded-lg">
+            <p className="text-[10px] text-slate-400 italic px-1 text-center bg-slate-50 py-2 rounded-lg">
               {t.mapHelp}
             </p>
           </div>
         ) : (
-          <div className="p-6 bg-stone-900/20 rounded-xl border border-dashed border-stone-800 text-center flex flex-col gap-2">
-            <Play className="w-5 h-5 text-stone-800 mx-auto" />
-            <span className="text-[10px] text-stone-700">Awaiting transcription result...</span>
+          <div className="p-6 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center flex flex-col gap-2">
+            <Play className="w-5 h-5 text-slate-300 mx-auto" />
+            <span className="text-[10px] text-slate-400">Awaiting transcription result...</span>
           </div>
         )}
       </div>
@@ -2270,28 +2271,28 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
   };
 
   return (
-    <div className={cn("flex flex-col h-screen bg-[#050505] text-stone-200 font-sans overflow-hidden selection:bg-amber-500/30", isRtl ? "rtl" : "ltr")} dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className={cn("flex flex-col h-screen bg-[#f4f5f8] text-slate-800 font-sans overflow-hidden selection:bg-indigo-500/30", isRtl ? "rtl" : "ltr")} dir={isRtl ? 'rtl' : 'ltr'}>
       
       {/* Header */}
-      <header className="h-16 px-8 flex items-center justify-between border-b border-white/5 bg-[#080808] shrink-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+      <header className="h-16 px-8 flex items-center justify-between border-b border-slate-200 bg-white shrink-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-4">
-          <div className="w-8 h-8 rounded-full border border-amber-500/50 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-amber-400 rounded-full shadow-[0_0_8px_#fbbf24] animate-pulse"></div>
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+            <div className="w-2 h-2 bg-indigo-600 rounded-full shadow-[0_0_8px_rgba(79,70,229,0.4)] animate-pulse"></div>
           </div>
-          <span className="text-xl font-light tracking-[0.2em] uppercase" style={{ fontFamily: "'Georgia', serif" }}>
-            Pen-Reveal <span className="text-stone-500">Studio</span>
+          <span className="text-lg font-bold tracking-tight text-slate-800 font-display">
+            Pen-Reveal <span className="text-indigo-600 font-normal">Studio</span>
           </span>
         </div>
         
         {/* Progress Bar for Rendering/Exporting */}
         {(isExporting || isProcessing) && (
           <div className="flex-1 max-w-xs mx-8 flex flex-col gap-1">
-            <div className="flex justify-between text-[9px] tracking-wider uppercase font-bold text-amber-500">
+            <div className="flex justify-between text-[9px] tracking-wider uppercase font-bold text-indigo-600">
               <span>{progress.text}</span>
               <span>{progress.percentage}%</span>
             </div>
-            <div className="w-full bg-stone-850 rounded-full h-1 overflow-hidden">
-              <div className="bg-amber-500 h-full transition-all duration-300 ease-out" style={{ width: `${progress.percentage}%` }} />
+            <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
+              <div className="bg-indigo-600 h-full transition-all duration-300 ease-out" style={{ width: `${progress.percentage}%` }} />
             </div>
           </div>
         )}
@@ -2300,18 +2301,18 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
           {/* Language Switcher */}
           <button 
             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded bg-stone-900 border border-stone-800 text-stone-300 hover:bg-stone-800 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shadow-sm"
           >
-            <Languages className="w-3.5 h-3.5 text-amber-500" />
+            <Languages className="w-3.5 h-3.5 text-indigo-600" />
             {lang === 'en' ? 'عربي' : 'English'}
           </button>
 
           {/* Share Option */}
           <button 
             onClick={() => setIsShareModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded bg-amber-500/10 border border-amber-500/20 text-amber-550 hover:bg-amber-500/20 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100/70 transition-colors cursor-pointer shadow-sm"
           >
-            <Link className="w-3.5 h-3.5 text-amber-500" />
+            <Link className="w-3.5 h-3.5 text-indigo-600" />
             {lang === 'en' ? 'Share / Invite' : 'مشاركة / دعوة'}
           </button>
           
@@ -2325,16 +2326,16 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
               else startAnimation(true);
             }}
             className={cn(
-              "h-9 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer",
+              "h-9 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer shadow-sm",
               !mainImgUrl || isProcessing || isAnimating || isExporting
-                ? "bg-stone-905 border-stone-850 text-stone-500 cursor-not-allowed"
-                : "bg-amber-500 border-amber-500 text-black hover:bg-amber-400 active:scale-[0.98] shadow-sm font-bold"
+                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-indigo-600 border-indigo-600 hover:bg-indigo-700 text-white active:scale-[0.98] font-bold"
             )}
           >
             {isExporting ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
             ) : (
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5 text-white" />
             )}
             {t.generateExport}
           </button>
@@ -2342,614 +2343,730 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
       </header>
 
       {/* Main Workspace Frame */}
-      <main className="flex-1 flex overflow-hidden relative">
+      <main className="flex-1 flex overflow-hidden relative bg-[#f4f5f8]">
         
-        {/* Left Sidebar (All Controls Co-located) */}
-        <motion.aside 
-          id="sidebar-left"
-          initial={{ x: -100, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          className="w-full lg:w-[360px] shrink-0 border-r border-white/5 bg-[#080808]/50 p-6 flex flex-col gap-6 overflow-y-auto z-20 custom-scrollbar"
-        >
-          <div className="space-y-6">
-            
-            {/* 1. Main Image Upload */}
-            <div className="flex flex-col gap-3">
-              <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.mainImage}</label>
-              <label className={cn(
-                "h-32 w-full border border-dashed rounded-xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all group",
-                mainImgUrl ? "border-amber-500/50 bg-amber-500/5" : "border-stone-800 bg-stone-900/20 hover:bg-stone-900/40"
-              )}>
-                {mainImgUrl ? (
-                  <img src={mainImgUrl} alt="preview" className="h-20 object-contain rounded-md shadow-lg" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-stone-850 flex items-center justify-center group-hover:bg-stone-800 transition-colors">
-                    <UploadCloud className="w-5 h-5 text-stone-400" />
-                  </div>
-                )}
-                <span className="text-xs text-stone-500">{mainImgUrl ? t.changeAsset : t.dropAsset}</span>
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setMainImgUrl)} />
-              </label>
-              
+        {/* Left Canva-style Tab Bar */}
+        <div className="w-20 shrink-0 bg-white border-r border-slate-200 flex flex-col items-center py-6 gap-6 z-30 shadow-[1px_0_3px_rgba(0,0,0,0.015)]">
+          {[
+            { id: 'assets', label: lang === 'en' ? 'Assets' : 'الوسائط', icon: UploadCloud },
+            { id: 'script', label: lang === 'en' ? 'Script' : 'النص والذكاء', icon: Sparkles },
+            { id: 'adjust', label: lang === 'en' ? 'Adjust' : 'التعديل', icon: Settings },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeLeftTab === tab.id;
+            return (
               <button
-                type="button"
-                onClick={() => {
-                  setMainImgUrl(DEMO_IMAGE);
-                  setIsStoryboardImg(false);
-                }}
-                className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-amber-500 text-xs font-semibold rounded-lg border border-stone-800 transition-all cursor-pointer text-center shadow-md shadow-amber-500/5"
-              >
-                {t.loadDemoArt}
-              </button>
-            </div>
-
-            {/* 2. AI Storyboard Creator (Script-to-Scenes) */}
-            <div className="p-4 border border-stone-805 bg-stone-950/25 rounded-xl space-y-4">
-              <span className="text-[10px] font-bold tracking-widest text-amber-500 uppercase flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
-                AI Storyboard Creator
-              </span>
-              
-              {storyboardStatus === 'EMPTY' && (
-                <div className="space-y-3">
-                  <textarea
-                    rows={4}
-                    value={scriptInput}
-                    onChange={(e) => setScriptInput(e.target.value)}
-                    placeholder="Type script here to auto-generate scenes..."
-                    dir="auto"
-                    className="w-full bg-[#0a0a0a] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:border-amber-500/50 outline-none resize-none leading-normal shadow-inner"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleCreateStoryboard}
-                      disabled={!scriptInput.trim()}
-                      className="flex-grow py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black font-bold text-[10.5px] rounded-lg cursor-pointer transition-colors"
-                    >
-                      Create Storyboard
-                    </button>
-                    <button
-                      disabled={true}
-                      className="flex-grow py-2 border border-stone-800 text-stone-500 font-bold text-[10.5px] rounded-lg cursor-not-allowed bg-stone-900/30"
-                    >
-                      Edit Storyboard
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {storyboardStatus === 'PROCESSING' && (
-                <div className="space-y-3 py-4 flex flex-col items-center justify-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-                  <span className="text-[10px] font-bold text-stone-400 animate-pulse">Generating Storyboard...</span>
-                </div>
-              )}
-
-              {storyboardStatus === 'ACTIVE' && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-stone-400 font-bold">Active Storyboard ({scenes.length} Scenes)</span>
-                    <button
-                      onClick={() => {
-                        setStoryboardStatus('EMPTY');
-                        setScenes([]);
-                        setElements([]);
-                      }}
-                      className="text-[9px] text-rose-500 hover:text-rose-455 font-bold cursor-pointer"
-                    >
-                      Reset
-                    </button>
-                  </div>
-
-                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-                    {scenes.map((scene) => {
-                      const isSelected = selectedElementId === scene.scene_id;
-                      return (
-                        <div
-                          key={scene.scene_id}
-                          onClick={() => setSelectedElementId(isSelected ? null : scene.scene_id)}
-                          className={cn(
-                            "p-2 rounded-lg border transition-all cursor-pointer flex gap-2 text-[10px]",
-                            isSelected
-                              ? "border-amber-500 bg-amber-500/10 text-amber-500 font-bold shadow"
-                              : "border-stone-850 bg-[#070707] text-stone-450 hover:border-stone-700"
-                          )}
-                        >
-                          <span className="font-bold text-amber-500 shrink-0">#{scene.scene_number}</span>
-                          <span className="truncate flex-1 text-stone-300">{scene.text}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {selectedElementId && scenes.some(s => s.scene_id === selectedElementId) && (
-                    <div className="space-y-2 pt-2 border-t border-stone-850">
-                      <textarea
-                        rows={2}
-                        value={activeSceneText}
-                        onChange={(e) => setActiveSceneText(e.target.value)}
-                        className="w-full bg-[#0a0a0a] border border-stone-800 rounded-lg p-2 text-[11px] text-stone-200 focus:border-amber-500/50 outline-none resize-none leading-normal"
-                      />
-                      <button
-                        onClick={handleEditStoryboard}
-                        disabled={storyboardMode === 'EDIT' || !activeSceneText.trim()}
-                        className="w-full py-1.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black font-semibold text-[10px] rounded-lg transition-all"
-                      >
-                        {storyboardMode === 'EDIT' ? "Updating..." : "Edit Storyboard"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* 3. AI Storyboard Block (Image Generator) */}
-            <div className="p-4 border border-stone-800 bg-stone-950/25 rounded-xl space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold tracking-wider text-amber-500 uppercase flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                  {t.aiStoryboardTitle}
-                </span>
-              </div>
-
-              {/* Image Generator Model Selector */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] text-stone-500 font-medium tracking-wide block">{t.aiStoryboardModel}</label>
-                <div className="flex gap-1 bg-[#101010] p-0.5 rounded-lg border border-stone-800">
-                  <button
-                    type="button"
-                    onClick={() => setUseFreeModel(true)}
-                    className={cn(
-                      "flex-1 py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium transition-all text-center cursor-pointer",
-                      useFreeModel 
-                        ? "bg-amber-500 text-black font-semibold shadow" 
-                        : "text-stone-400 hover:text-stone-200 hover:bg-stone-900"
-                    )}
-                  >
-                    {t.aiFreeGeminiModel}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUseFreeModel(false)}
-                    className={cn(
-                      "flex-1 py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium transition-all text-center cursor-pointer",
-                      !useFreeModel 
-                        ? "bg-amber-500 text-black font-semibold shadow" 
-                        : "text-stone-400 hover:text-stone-200 hover:bg-stone-900"
-                    )}
-                  >
-                    {t.aiPaidImagenModel}
-                  </button>
-                </div>
-              </div>
-
-              {/* Style Selector */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] text-stone-500 font-medium tracking-wide block">{t.aiStoryboardStyle}</label>
-                <div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto custom-scrollbar p-1 bg-[#101010] rounded-lg border border-stone-800">
-                  {['Auto-select', 'Comic Strip', 'Kawaii', 'Clay', 'Sketch Note', 'Anime', 'Editorial', 'Instructional', 'Bento Grid', 'Bricks', 'Scientific', 'Professional'].map((styleOption) => {
-                    const isSelected = storyboardStyle === styleOption;
-                    return (
-                      <button
-                        key={styleOption}
-                        type="button"
-                        onClick={() => setStoryboardStyle(styleOption)}
-                        className={cn(
-                          "px-2 py-1 rounded text-[11px] text-left transition-all border border-transparent cursor-pointer",
-                          isSelected
-                            ? "bg-amber-500/10 text-amber-500 border-amber-500/20 font-medium"
-                            : "text-stone-400 hover:text-stone-200 hover:bg-stone-900"
-                        )}
-                      >
-                        {styleOption}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Generate Storyboard Button */}
-              <button
-                type="button"
-                disabled={isGeneratingStoryboard}
-                onClick={generateStoryboardImage}
+                key={tab.id}
+                onClick={() => setActiveLeftTab(activeLeftTab === tab.id ? null : tab.id as any)}
                 className={cn(
-                  "w-full h-9 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer",
-                  isGeneratingStoryboard
-                    ? "bg-stone-900 border-stone-800 text-stone-400 cursor-not-allowed"
-                    : transcription.length === 0
-                    ? "bg-stone-900/40 border-stone-900/30 text-stone-500 hover:text-stone-400 cursor-help"
-                    : "bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:opacity-90 active:scale-[0.98] shadow-lg shadow-amber-500/10 border-amber-500"
+                  "w-14 h-14 rounded-xl flex flex-col items-center justify-center gap-1 transition-all relative group cursor-pointer border",
+                  isActive 
+                    ? "bg-indigo-50 border-indigo-100 text-indigo-700 font-bold" 
+                    : "border-transparent text-slate-400 hover:text-slate-700 hover:bg-slate-50"
                 )}
-                title={transcription.length === 0 ? t.aiStoryboardNoTranscription : ""}
               >
-                {isGeneratingStoryboard ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
-                    <span className="text-[11px] truncate max-w-[200px]">{t.aiStoryboardGenerating}</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5 text-amber-455" />
-                    <span>{t.aiStoryboardGenBtn}</span>
-                  </>
+                {isActive && (
+                  <div className={cn(
+                    "absolute top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-600 rounded-full",
+                    isRtl ? "left-0" : "right-0"
+                  )} />
                 )}
+                <Icon className="w-5 h-5" />
+                <span className="text-[9px] font-medium tracking-tight leading-none">{tab.label}</span>
               </button>
+            );
+          })}
+        </div>
 
-              {storyboardError && (
-                <div role="alert" className="p-2 border border-rose-500/20 bg-rose-500/5 rounded-lg text-[10px] text-rose-455 leading-relaxed font-medium">
-                  {storyboardError}
-                </div>
-              )}
-
-              {storyboardPrompt && (
-                <details className="text-[9px] text-stone-500 bg-[#0d0d0d] p-2 rounded-lg border border-stone-900/50 cursor-pointer">
-                  <summary className="font-semibold text-stone-400 focus:outline-none">{t.aiStoryboardPromptUsed}</summary>
-                  <p className="mt-1 leading-normal text-stone-400 italic whitespace-pre-wrap">{storyboardPrompt}</p>
-                </details>
-              )}
-            </div>
-
-            {/* 4. Gemini 2.5 Image Editor */}
-            <div className="p-4 border border-stone-800 bg-[#0c0c0c]/90 rounded-xl space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold tracking-wider text-amber-500 uppercase flex items-center gap-1.5">
-                  <Brush className="w-3.5 h-3.5 text-amber-400" />
-                  {t.geminiEditTitle}
-                </span>
-                <span className="text-[8px] bg-amber-500/15 text-amber-500 font-mono py-0.5 px-1.5 rounded-full border border-amber-500/25">
-                  Gemini-2.5
-                </span>
-              </div>
-
-              {!mainImgUrl ? (
-                <div className="text-stone-500 text-[10px] leading-relaxed italic bg-[#050505] p-3 rounded-lg border border-stone-900 text-center">
-                  {t.geminiNoImageError}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="relative h-16 w-full rounded-lg overflow-hidden border border-stone-850 bg-[#050505] flex items-center justify-center p-1">
-                    <img src={mainImgUrl} alt="Active scene" className="h-full object-contain max-w-full opacity-60 rounded" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-center pb-1">
-                      <span className="text-[9px] text-stone-400 font-semibold tracking-wide uppercase">Active Image Target</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <textarea
-                      value={editPrompt}
-                      onChange={(e) => setEditPrompt(e.target.value)}
-                      placeholder={t.geminiEditInputPlaceholder}
-                      rows={2}
-                      className="w-full text-xs bg-[#101010] text-stone-200 border border-stone-800 rounded-lg p-2.5 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/20 outline-none resize-none placeholder:text-stone-650 leading-relaxed font-sans"
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    disabled={isEditingImage || !editPrompt.trim()}
-                    onClick={handleEditImageWithGemini}
-                    className={cn(
-                      "w-full h-9 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer",
-                      isEditingImage
-                        ? "bg-stone-900 border-stone-800 text-stone-400 cursor-not-allowed"
-                        : !editPrompt.trim()
-                        ? "bg-stone-900/40 border-stone-900/30 text-stone-500 cursor-not-allowed"
-                        : "bg-gradient-to-r from-amber-600 to-amber-500 text-white hover:opacity-90 active:scale-[0.98] shadow-lg shadow-amber-500/10 border-amber-500"
-                    )}
-                  >
-                    {isEditingImage ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
-                        <span className="text-[11px] truncate">{editStatus || t.geminiEditing}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                        <span>{t.geminiEditBtn}</span>
-                      </>
-                    )}
-                  </button>
-
-                  {editError && (
-                    <div role="alert" className="p-2.5 border border-rose-500/20 bg-rose-500/5 rounded-lg text-[10px] text-rose-455 leading-relaxed font-medium">
-                      {editError}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* 5. Pen Overlay (Optional) */}
-            <div className="flex flex-col gap-3">
-              <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.penOverlay}</label>
-              <label className={cn(
-                "flex flex-col items-center gap-2 p-4 border rounded-xl cursor-pointer transition-colors",
-                "border-stone-800 bg-[#0a0a0a] hover:border-amber-500/50"
-              )}>
-                <span className="text-xs text-stone-400 flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-stone-500" />
-                  {t.selectPen}
-                </span>
-                <input type="file" accept="image/png" className="hidden" onChange={(e) => handleImageUpload(e, setPenImgUrl)} />
-              </label>
-            </div>
-
-            {/* 6. Audio Asset */}
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between items-center">
-                 <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.audioTitle}</label>
-                 <div className="flex rounded bg-stone-900 border border-stone-800 p-0.5 gap-0.5">
-                   <button 
-                     onClick={() => setScriptMode('upload')}
-                     className={cn("px-2 py-0.5 text-[9px] rounded transition-all cursor-pointer", scriptMode === 'upload' ? "bg-stone-800 text-amber-500 font-semibold" : "text-stone-500 hover:text-stone-400")}
-                   >
-                     {t.uploadAudioTab}
-                   </button>
-                   <button 
-                     onClick={() => setScriptMode('text')}
-                     className={cn("px-2 py-0.5 text-[9px] rounded transition-all cursor-pointer", scriptMode === 'text' ? "bg-stone-800 text-amber-500 font-semibold" : "text-stone-500 hover:text-stone-400")}
-                   >
-                     {t.writeScriptTab}
-                   </button>
-                 </div>
-              </div>
-
-              {scriptMode === 'upload' ? (
-                <label htmlFor="audio-upload" className={cn(
-                  "flex flex-col items-center gap-2 p-4 border rounded-xl cursor-pointer transition-colors",
-                  audioUrl ? "border-amber-500/50 bg-amber-500/5" : "border-stone-800 bg-[#0a0a0a] hover:border-amber-500/50"
-                )}>
-                  <span className="text-xs text-stone-400 flex items-center gap-2">
-                    {isTranscribing ? <div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" /> : <Play className="w-4 h-4 text-stone-500" />}
-                    {audioUrl ? "Audio Active" : t.selectAudio}
-                  </span>
-                  <input id="audio-upload" type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
-                </label>
-              ) : (
-                <div className="flex flex-col gap-2.5 p-3 border border-stone-800 bg-[#070707] rounded-xl">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[9px] text-stone-500 font-bold uppercase">{t.narratorVoiceName}</span>
-                    <select
-                      value={voiceName}
-                      onChange={(e) => setVoiceName(e.target.value)}
-                      className="bg-stone-900 border border-stone-800 text-stone-300 text-[10px] rounded px-1.5 py-0.5 outline-none focus:border-amber-500 cursor-pointer font-semibold"
+        {/* Slideout Drawer Panel */}
+        <AnimatePresence>
+          {activeLeftTab && (
+            <motion.div
+              id="sidebar-left"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 340, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="h-full shrink-0 border-r border-slate-200 bg-white z-20 overflow-y-auto flex flex-col custom-scrollbar text-slate-800"
+            >
+              <div className="p-6 flex-grow flex flex-col justify-between space-y-6">
+                <div className="space-y-6">
+                  
+                  {/* Header Title */}
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      {activeLeftTab === 'assets' && (lang === 'en' ? 'Asset Management' : 'إدارة الوسائط')}
+                      {activeLeftTab === 'script' && (lang === 'en' ? 'AI Storyboard & Script' : 'لوحة القصة والذكاء')}
+                      {activeLeftTab === 'adjust' && (lang === 'en' ? 'Animation Adjustments' : 'إعدادات الحركة')}
+                    </h3>
+                    <button 
+                      onClick={() => setActiveLeftTab(null)}
+                      className="text-slate-400 hover:text-slate-700 transition-colors text-xs font-semibold cursor-pointer"
                     >
-                      <option value="Kore">Kore (Warm Male)</option>
-                      <option value="Puck">Puck (Rich Male)</option>
-                      <option value="Fenrir">Fenrir (Deep Storyteller)</option>
-                      <option value="Charon">Charon (Calm Male)</option>
-                      <option value="Aoede">Aoede (Narrative Female)</option>
-                    </select>
+                      {lang === 'en' ? 'Close' : 'إغلاق'}
+                    </button>
                   </div>
-                  
-                  <textarea
-                    rows={3}
-                    value={scriptText}
-                    onChange={(e) => setScriptText(e.target.value)}
-                    placeholder={t.scriptPlaceholder}
-                    dir="auto"
-                    className="w-full bg-[#0a0a0a] border border-stone-800 rounded-lg p-2 text-xs text-stone-200 focus:border-amber-500/50 outline-none resize-none leading-relaxed"
-                  />
-                  
-                  <button
-                    onClick={generateNarratorVoice}
-                    disabled={isGeneratingVoice || !scriptText.trim()}
-                    className="w-full flex justify-center items-center gap-2 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black font-bold text-[11px] rounded-lg transition-all shadow-md active:scale-[0.98] cursor-pointer"
-                  >
-                    {isGeneratingVoice ? (
-                      <>
-                        <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                        <span>{t.generatingVoice}</span>
-                      </>
-                    ) : (
-                      <span>{t.generateVoiceBtn}</span>
-                    )}
-                  </button>
 
-                  {audioUrl && (
-                    <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex flex-col gap-1 text-[10px] text-amber-500 font-mono">
-                      <span>🎤 Story Voiceover Loaded</span>
-                      <audio src={audioUrl} controls className="w-full h-8 scale-95 mt-1" />
+                  {/* 1. ASSETS TAB CONTENT */}
+                  {activeLeftTab === 'assets' && (
+                    <div className="space-y-6">
+                      {/* AI Storyboard Creator */}
+                      <div className="p-4 border border-slate-200 bg-slate-50/50 rounded-xl space-y-4 shadow-sm">
+                        <span className="text-[10px] font-bold tracking-widest text-indigo-600 uppercase flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          AI Storyboard Creator
+                        </span>
+                        
+                        {storyboardStatus === 'EMPTY' && (
+                          <div className="space-y-3">
+                            <textarea
+                              rows={4}
+                              value={scriptInput}
+                              onChange={(e) => setScriptInput(e.target.value)}
+                              placeholder="Type script here to auto-generate scenes..."
+                              dir="auto"
+                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs text-slate-800 focus:border-indigo-500/50 outline-none resize-none leading-normal shadow-inner"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={handleCreateStoryboard}
+                                disabled={!scriptInput.trim()}
+                                className="flex-grow py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-[10.5px] rounded-lg cursor-pointer transition-colors shadow-sm"
+                              >
+                                Create Storyboard
+                              </button>
+                              <button
+                                disabled={true}
+                                className="flex-grow py-2 border border-slate-200 text-slate-400 font-bold text-[10.5px] rounded-lg cursor-not-allowed bg-slate-100"
+                              >
+                                Edit Storyboard
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {storyboardStatus === 'PROCESSING' && (
+                          <div className="space-y-3 py-4 flex flex-col items-center justify-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                            <span className="text-[10px] font-bold text-slate-500 animate-pulse">Generating Storyboard...</span>
+                          </div>
+                        )}
+
+                        {storyboardStatus === 'ACTIVE' && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] text-slate-505 font-bold">Active Storyboard ({scenes.length} Scenes)</span>
+                              <button
+                                onClick={() => {
+                                  setStoryboardStatus('EMPTY');
+                                  setScenes([]);
+                                  setElements([]);
+                                }}
+                                className="text-[9px] text-rose-605 hover:text-rose-700 font-bold cursor-pointer"
+                              >
+                                Reset
+                              </button>
+                            </div>
+
+                            <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                              {scenes.map((scene) => {
+                                const isSelected = selectedElementId === scene.scene_id;
+                                return (
+                                  <div
+                                    key={scene.scene_id}
+                                    onClick={() => setSelectedElementId(isSelected ? null : scene.scene_id)}
+                                    className={cn(
+                                      "p-2 rounded-lg border transition-all cursor-pointer flex gap-2 text-[10px]",
+                                      isSelected
+                                        ? "border-indigo-500 bg-indigo-50/70 text-indigo-700 font-bold shadow-sm"
+                                        : "border-slate-200 bg-white text-slate-605 hover:border-slate-350"
+                                    )}
+                                  >
+                                    <span className="font-bold text-indigo-600 shrink-0">#{scene.scene_number}</span>
+                                    <span className="truncate flex-1 text-slate-700">{scene.text}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {selectedElementId && scenes.some(s => s.scene_id === selectedElementId) && (
+                              <div className="space-y-2 pt-2 border-t border-slate-100">
+                                <textarea
+                                  rows={2}
+                                  value={activeSceneText}
+                                  onChange={(e) => setActiveSceneText(e.target.value)}
+                                  className="w-full bg-white border border-slate-200 rounded-lg p-2 text-[11px] text-slate-800 focus:border-indigo-500/50 outline-none resize-none leading-normal shadow-inner"
+                                />
+                                <button
+                                  onClick={handleEditStoryboard}
+                                  disabled={storyboardMode === 'EDIT' || !activeSceneText.trim()}
+                                  className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-[10px] rounded-lg transition-all shadow-sm"
+                                >
+                                  {storyboardMode === 'EDIT' ? "Updating..." : "Edit Storyboard"}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Custom Media Uploads */}
+                      <div className="space-y-5 border-t border-slate-100 pt-4">
+                        <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                          Custom Media Uploads
+                        </span>
+                        
+                        {/* Main Image Upload */}
+                        <div className="flex flex-col gap-2.5">
+                          <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t.mainImage}</label>
+                          <label className={cn(
+                            "h-32 w-full border border-dashed rounded-xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all group",
+                            mainImgUrl ? "border-indigo-500 bg-indigo-50/10" : "border-slate-200 bg-slate-50 hover:bg-slate-100/70"
+                          )}>
+                            {mainImgUrl ? (
+                              <img src={mainImgUrl} alt="preview" className="h-20 object-contain rounded-md shadow-sm" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors text-slate-400">
+                                <UploadCloud className="w-5 h-5" />
+                              </div>
+                            )}
+                            <span className="text-xs text-slate-500">{mainImgUrl ? t.changeAsset : t.dropAsset}</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setMainImgUrl)} />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMainImgUrl(DEMO_IMAGE);
+                              setIsStoryboardImg(false);
+                            }}
+                            className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-indigo-600 text-xs font-semibold rounded-lg border border-slate-200 transition-all cursor-pointer text-center shadow-sm"
+                          >
+                            {t.loadDemoArt}
+                          </button>
+                        </div>
+
+                        {/* Pen Overlay */}
+                        <div className="flex flex-col gap-2.5">
+                          <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t.penOverlay}</label>
+                          <label className={cn(
+                            "flex flex-col items-center gap-2 p-4 border border-dashed rounded-xl cursor-pointer transition-colors",
+                            "border-slate-200 bg-slate-50 hover:bg-slate-100/70"
+                          )}>
+                            <span className="text-xs text-slate-500 flex items-center gap-2">
+                              <ImageIcon className="w-4 h-4 text-slate-400" />
+                              {t.selectPen}
+                            </span>
+                            <input type="file" accept="image/png" className="hidden" onChange={(e) => handleImageUpload(e, setPenImgUrl)} />
+                          </label>
+                        </div>
+
+                        {/* Audio Asset */}
+                        <div className="flex flex-col gap-2.5">
+                          <div className="flex justify-between items-center">
+                            <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t.audioTitle}</label>
+                            <div className="flex rounded bg-slate-100 border border-slate-200 p-0.5 gap-0.5 shadow-sm">
+                              <button 
+                                onClick={() => setScriptMode('upload')}
+                                className={cn("px-2 py-0.5 text-[9px] rounded transition-all cursor-pointer", scriptMode === 'upload' ? "bg-white text-indigo-600 font-semibold shadow-sm" : "text-slate-500 hover:text-slate-700")}
+                              >
+                                {t.uploadAudioTab}
+                              </button>
+                              <button 
+                                onClick={() => setScriptMode('text')}
+                                className={cn("px-2 py-0.5 text-[9px] rounded transition-all cursor-pointer", scriptMode === 'text' ? "bg-white text-indigo-600 font-semibold shadow-sm" : "text-slate-500 hover:text-slate-700")}
+                              >
+                                {t.writeScriptTab}
+                              </button>
+                            </div>
+                          </div>
+
+                          {scriptMode === 'upload' ? (
+                            <label htmlFor="audio-upload" className={cn(
+                              "flex flex-col items-center gap-2 p-4 border border-dashed rounded-xl cursor-pointer transition-colors",
+                              audioUrl ? "border-indigo-500 bg-indigo-50/10" : "border-slate-200 bg-slate-50 hover:bg-slate-100/70"
+                            )}>
+                              <span className="text-xs text-slate-500 flex items-center gap-2">
+                                {isTranscribing ? <div className="w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" /> : <Play className="w-4 h-4 text-slate-400" />}
+                                {audioUrl ? "Audio Active" : t.selectAudio}
+                              </span>
+                              <input id="audio-upload" type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
+                            </label>
+                          ) : (
+                            <div className="flex flex-col gap-2.5 p-3 border border-slate-200 bg-slate-50/50 rounded-xl">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[9px] text-slate-500 font-bold uppercase">{t.narratorVoiceName}</span>
+                                <select
+                                  value={voiceName}
+                                  onChange={(e) => setVoiceName(e.target.value)}
+                                  className="bg-white border border-slate-200 text-slate-700 text-[10px] rounded px-1.5 py-0.5 outline-none focus:border-indigo-500 cursor-pointer font-semibold shadow-sm"
+                                >
+                                  <option value="Kore">Kore (Warm Male)</option>
+                                  <option value="Puck">Puck (Rich Male)</option>
+                                  <option value="Fenrir">Fenrir (Deep Storyteller)</option>
+                                  <option value="Charon">Charon (Calm Male)</option>
+                                  <option value="Aoede">Aoede (Narrative Female)</option>
+                                </select>
+                              </div>
+                              
+                              <textarea
+                                rows={3}
+                                value={scriptText}
+                                onChange={(e) => setScriptText(e.target.value)}
+                                placeholder={t.scriptPlaceholder}
+                                dir="auto"
+                                className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs text-slate-800 focus:border-indigo-500/50 outline-none resize-none leading-relaxed shadow-inner"
+                              />
+                              
+                              <button
+                                onClick={generateNarratorVoice}
+                                disabled={isGeneratingVoice || !scriptText.trim()}
+                                className="w-full flex justify-center items-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-[11px] rounded-lg transition-all shadow-sm active:scale-[0.98] cursor-pointer"
+                              >
+                                {isGeneratingVoice ? (
+                                  <>
+                                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span>{t.generatingVoice}</span>
+                                  </>
+                                ) : (
+                                  <span>{t.generateVoiceBtn}</span>
+                                )}
+                              </button>
+
+                              {audioUrl && (
+                                <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-lg flex flex-col gap-1 text-[10px] text-indigo-700 font-mono">
+                                  <span>🎙️ Voiceover Loaded</span>
+                                  <audio src={audioUrl} controls className="w-full h-8 scale-95 mt-1" />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
+
+                  {/* 2. SCRIPT TAB CONTENT */}
+                  {activeLeftTab === 'script' && (
+                    <div className="space-y-6">
+                      {/* AI Storyboard Block */}
+                      <div className="p-4 border border-slate-200 bg-slate-50/50 rounded-xl space-y-4 shadow-sm">
+                        <span className="text-[11px] font-bold tracking-wider text-indigo-600 uppercase flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                          {t.aiStoryboardTitle}
+                        </span>
+
+                        {/* Image Generator Model Selector */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] text-slate-500 font-medium tracking-wide block">{t.aiStoryboardModel}</label>
+                          <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-inner">
+                            <button
+                              type="button"
+                              onClick={() => setUseFreeModel(true)}
+                              className={cn(
+                                "flex-1 py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium transition-all text-center cursor-pointer",
+                                useFreeModel 
+                                  ? "bg-white text-indigo-600 font-semibold shadow-sm" 
+                                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50"
+                              )}
+                            >
+                              {t.aiFreeGeminiModel}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setUseFreeModel(false)}
+                              className={cn(
+                                "flex-1 py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium transition-all text-center cursor-pointer",
+                                !useFreeModel 
+                                  ? "bg-white text-indigo-600 font-semibold shadow-sm" 
+                                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50"
+                              )}
+                            >
+                              {t.aiPaidImagenModel}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Style Selector */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] text-slate-505 font-medium tracking-wide block">{t.aiStoryboardStyle}</label>
+                          <div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto custom-scrollbar p-1 bg-slate-100 rounded-lg border border-slate-200">
+                            {['Auto-select', 'Comic Strip', 'Kawaii', 'Clay', 'Sketch Note', 'Anime', 'Editorial', 'Instructional', 'Bento Grid', 'Bricks', 'Scientific', 'Professional'].map((styleOption) => {
+                              const isSelected = storyboardStyle === styleOption;
+                              return (
+                                <button
+                                  key={styleOption}
+                                  type="button"
+                                  onClick={() => setStoryboardStyle(styleOption)}
+                                  className={cn(
+                                    "px-2 py-1 rounded text-[11px] text-left transition-all border border-transparent cursor-pointer",
+                                    isSelected
+                                      ? "bg-white text-indigo-600 border-indigo-100 font-medium shadow-sm"
+                                      : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50"
+                                  )}
+                                >
+                                  {styleOption}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Generate Storyboard Button */}
+                        <button
+                          type="button"
+                          disabled={isGeneratingStoryboard}
+                          onClick={generateStoryboardImage}
+                          className={cn(
+                            "w-full h-9 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer shadow-sm",
+                            isGeneratingStoryboard
+                              ? "bg-slate-105 border-slate-200 text-slate-400 cursor-not-allowed"
+                              : transcription.length === 0
+                              ? "bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-600 cursor-help"
+                              : "bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]"
+                          )}
+                          title={transcription.length === 0 ? t.aiStoryboardNoTranscription : ""}
+                        >
+                          {isGeneratingStoryboard ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                              <span className="text-[11px] truncate max-w-[200px]">{t.aiStoryboardGenerating}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3.5 h-3.5" />
+                              <span>{t.aiStoryboardGenBtn}</span>
+                            </>
+                          )}
+                        </button>
+
+                        {storyboardError && (
+                          <div role="alert" className="p-2 border border-rose-200 bg-rose-50 rounded-lg text-[10px] text-rose-600 leading-relaxed font-medium">
+                            {storyboardError}
+                          </div>
+                        )}
+
+                        {storyboardPrompt && (
+                          <details className="text-[9px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-200 cursor-pointer shadow-inner">
+                            <summary className="font-semibold text-slate-600 focus:outline-none">{t.aiStoryboardPromptUsed}</summary>
+                            <p className="mt-1 leading-normal text-slate-600 italic whitespace-pre-wrap">{storyboardPrompt}</p>
+                          </details>
+                        )}
+                      </div>
+
+                      {/* Gemini 2.5 Image Editor */}
+                      <div className="p-4 border border-slate-200 bg-slate-50/50 rounded-xl space-y-4 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold tracking-wider text-indigo-600 uppercase flex items-center gap-1.5">
+                            <Brush className="w-3.5 h-3.5" />
+                            {t.geminiEditTitle}
+                          </span>
+                          <span className="text-[8px] bg-indigo-50 text-indigo-600 font-mono py-0.5 px-1.5 rounded-full border border-indigo-100">
+                            Gemini-2.5
+                          </span>
+                        </div>
+
+                        {!mainImgUrl ? (
+                          <div className="text-slate-500 text-[10px] leading-relaxed italic bg-white p-3 rounded-lg border border-slate-200 text-center">
+                            {t.geminiNoImageError}
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="relative h-16 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center p-1 shadow-inner">
+                              <img src={mainImgUrl} alt="Active scene" className="h-full object-contain max-w-full opacity-60 rounded" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex items-end justify-center pb-1">
+                                <span className="text-[9px] text-white font-semibold tracking-wide uppercase">Active Image Target</span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <textarea
+                                value={editPrompt}
+                                onChange={(e) => setEditPrompt(e.target.value)}
+                                placeholder={t.geminiEditInputPlaceholder}
+                                rows={2}
+                                className="w-full text-xs bg-white text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 outline-none resize-none placeholder:text-slate-400 leading-relaxed font-sans shadow-inner"
+                              />
+                            </div>
+
+                            <button
+                              type="button"
+                              disabled={isEditingImage || !editPrompt.trim()}
+                              onClick={handleEditImageWithGemini}
+                              className={cn(
+                                "w-full h-9 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold select-none border transition-all cursor-pointer shadow-sm",
+                                isEditingImage
+                                  ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
+                                  : !editPrompt.trim()
+                                  ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed"
+                                  : "bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]"
+                              )}
+                            >
+                              {isEditingImage ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                                  <span className="text-[11px] truncate">{editStatus || t.geminiEditing}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+                                  <span>{t.geminiEditBtn}</span>
+                                </>
+                              )}
+                            </button>
+
+                            {editError && (
+                              <div role="alert" className="p-2.5 border border-rose-200 bg-rose-50 rounded-lg text-[10px] text-rose-600 leading-relaxed font-medium">
+                                {editError}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. ADJUST TAB CONTENT */}
+                  {activeLeftTab === 'adjust' && (
+                    <div className="space-y-6">
+                      {/* Animation Logic */}
+                      <div className="p-4 border border-slate-200 bg-slate-50/50 rounded-xl space-y-4 shadow-sm">
+                        <span className="text-[10px] font-bold tracking-widest text-indigo-600 uppercase block">
+                          {t.animationLogic}
+                        </span>
+
+                        <div className="flex bg-slate-100 rounded-lg p-1 gap-1 border border-slate-200 shadow-inner">
+                          <button
+                            type="button"
+                            onClick={() => setColorMode('outline')}
+                            className={cn("flex-grow py-1.5 text-[10px] rounded leading-none transition-colors cursor-pointer", colorMode === 'outline' ? "bg-white text-indigo-600 font-bold shadow-sm" : "text-slate-500 hover:text-slate-700")}
+                          >
+                            {t.drawOutline}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setColorMode('paint')}
+                            className={cn("flex-grow py-1.5 text-[10px] rounded leading-none transition-colors cursor-pointer", colorMode === 'paint' ? "bg-white text-indigo-600 font-bold shadow-sm" : "text-slate-505 hover:text-slate-700")}
+                          >
+                            {t.paintOriginal}
+                          </button>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs text-slate-700 font-medium flex justify-between">
+                            <span>{t.penSpeed}</span>
+                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{defaultPenSpeed}</span>
+                          </label>
+                          <input type="range" min="1" max="100" value={defaultPenSpeed} onChange={(e) => setDefaultPenSpeed(Number(e.target.value))} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs text-slate-700 font-medium flex justify-between">
+                            <span>{t.edgeSensitivity}</span>
+                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{edgeSensitivity}%</span>
+                          </label>
+                          <input type="range" min="1" max="100" value={edgeSensitivity} onChange={(e) => setEdgeSensitivity(Number(e.target.value))} onMouseUp={() => { if (mainImgUrl) prepareAnimation(); }} onTouchEnd={() => { if (mainImgUrl) prepareAnimation(); }} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs text-slate-700 font-medium flex justify-between">
+                            <span>{t.bloomRadius}</span>
+                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{glowSize}px</span>
+                          </label>
+                          <input type="range" min="0" max="100" value={glowSize} onChange={(e) => setGlowSize(Number(e.target.value))} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                        </div>
+                        
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs text-slate-700 font-medium flex justify-between">
+                            <span>{t.baseOpacity}</span>
+                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{baseOpacity}%</span>
+                          </label>
+                          <input type="range" min="0" max="50" value={baseOpacity} onChange={(e) => setBaseOpacity(Number(e.target.value))} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs text-slate-700 font-medium">{t.drawDirection}</label>
+                          <select 
+                            className="bg-white border border-slate-200 text-slate-700 text-xs rounded-lg p-2 outline-none focus:border-indigo-500 shadow-sm font-semibold cursor-pointer"
+                            value={drawDirection}
+                            onChange={(e) => setDrawDirection(e.target.value as any)}
+                          >
+                            <option value="default">{t.dirDefault}</option>
+                            <option value="ltr">{t.dirLTR}</option>
+                            <option value="rtl">{t.dirRTL}</option>
+                            <option value="ttb">{t.dirTTB}</option>
+                            <option value="btt">{t.dirBTT}</option>
+                          </select>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs text-slate-700 font-medium">{t.canvasBg}</label>
+                          <select
+                            className="bg-white border border-slate-200 text-slate-700 text-xs rounded-lg p-2 outline-none focus:border-indigo-500 shadow-sm font-semibold cursor-pointer"
+                            value={canvasBgColor}
+                            onChange={(e) => setCanvasBgColor(e.target.value)}
+                          >
+                            <option value="#050505">{t.bgBlack}</option>
+                            <option value="#ffffff">{t.bgWhite}</option>
+                            <option value="transparent">{t.bgTrans}</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Timeline mapping mapping */}
+                      <TimelineMapping />
+
+                      {/* Pen Calibration */}
+                      <div className="p-4 border border-slate-200 bg-slate-50/50 rounded-xl space-y-4 shadow-sm">
+                        <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase block">{t.penCalibration}</label>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs text-slate-750 font-medium flex justify-between">
+                            <span>{t.scale}</span>
+                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{penScale}%</span>
+                          </label>
+                          <input type="range" min="5" max="50" value={penScale} onChange={(e) => setPenScale(Number(e.target.value))} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs text-slate-750 font-medium flex justify-between">
+                            <span>{t.tipXOffset}</span>
+                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{penOffsetX}%</span>
+                          </label>
+                          <input type="range" min="0" max="100" value={penOffsetX} onChange={(e) => setPenOffsetX(Number(e.target.value))} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs text-slate-750 font-medium flex justify-between">
+                            <span>{t.tipYOffset}</span>
+                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{penOffsetY}%</span>
+                          </label>
+                          <input type="range" min="0" max="100" value={penOffsetY} onChange={(e) => setPenOffsetY(Number(e.target.value))} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
-              )}
-            </div>
-
-            {/* 7. Animation Logic */}
-            <div className="space-y-4 pt-2">
-              <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.animationLogic}</label>
-              
-              <div className="flex bg-stone-900 rounded-lg p-1 gap-1">
-                <button
-                  onClick={() => {
-                    setColorMode('outline');
-                    if (mainImgUrl) {
-                      setTimeout(() => {
-                        prepareAnimation();
-                      }, 50);
-                    }
-                  }}
-                  className={cn("flex-1 py-1.5 text-[10px] rounded leading-none transition-colors cursor-pointer font-medium", colorMode === 'outline' ? "bg-stone-800 text-amber-500" : "text-stone-500 hover:text-stone-300")}
-                >
-                  {t.drawOutline}
-                </button>
-                <button
-                  onClick={() => {
-                    setColorMode('paint');
-                    if (mainImgUrl) {
-                      setTimeout(() => {
-                        prepareAnimation();
-                      }, 50);
-                    }
-                  }}
-                  className={cn("flex-1 py-1.5 text-[10px] rounded leading-none transition-colors cursor-pointer font-medium", colorMode === 'paint' ? "bg-stone-800 text-amber-500" : "text-stone-500 hover:text-stone-300")}
-                >
-                  {t.paintOriginal}
-                </button>
               </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-350">{t.drawDirection}</label>
-                <select 
-                  className="bg-stone-900 border border-stone-800 text-stone-300 text-xs rounded-lg p-2 outline-none focus:border-amber-500 cursor-pointer font-semibold"
-                  value={drawDirection}
-                  onChange={(e) => setDrawDirection(e.target.value as any)}
-                >
-                  <option value="default">{t.dirDefault}</option>
-                  <option value="ltr">{t.dirLTR}</option>
-                  <option value="rtl">{t.dirRTL}</option>
-                  <option value="ttb">{t.dirTTB}</option>
-                  <option value="btt">{t.dirBTT}</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-355">{t.canvasBg}</label>
-                <select
-                  className="bg-stone-900 border border-stone-800 text-stone-300 text-xs rounded-lg p-2 outline-none focus:border-amber-500 cursor-pointer font-semibold"
-                  value={canvasBgColor}
-                  onChange={(e) => setCanvasBgColor(e.target.value)}
-                >
-                  <option value="#050505">{t.bgBlack}</option>
-                  <option value="#ffffff">{t.bgWhite}</option>
-                  <option value="transparent">{t.bgTrans}</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-355 flex justify-between">
-                  <span>{t.penSpeed}</span>
-                  <span className="text-[10px] font-mono text-amber-500">{defaultPenSpeed}</span>
-                </label>
-                <input type="range" min="1" max="100" value={defaultPenSpeed} onChange={(e) => setDefaultPenSpeed(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-355 flex justify-between">
-                  <span>{t.edgeSensitivity}</span>
-                  <span className="text-[10px] font-mono text-amber-500">{edgeSensitivity}%</span>
-                </label>
-                <input type="range" min="1" max="100" value={edgeSensitivity} onChange={(e) => setEdgeSensitivity(Number(e.target.value))} onMouseUp={() => { if (mainImgUrl) prepareAnimation(); }} onTouchEnd={() => { if (mainImgUrl) prepareAnimation(); }} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-355 flex justify-between">
-                  <span>{t.bloomRadius}</span>
-                  <span className="text-[10px] font-mono text-amber-500">{glowSize}px</span>
-                </label>
-                <input type="range" min="0" max="100" value={glowSize} onChange={(e) => setGlowSize(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
-              </div>
-              
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-355 flex justify-between">
-                  <span>{t.baseOpacity}</span>
-                  <span className="text-[10px] font-mono text-amber-500">{baseOpacity}%</span>
-                </label>
-                <input type="range" min="0" max="50" value={baseOpacity} onChange={(e) => setBaseOpacity(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
-              </div>
-            </div>
-
-            {/* 8. Transcription mapping Timeline Mapping */}
-            <TimelineMapping />
-
-            {/* 9. Pen Calibration */}
-            <div className="space-y-4 pt-2 border-t border-white/5">
-              <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.penCalibration}</label>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-300 flex justify-between">
-                  <span>{t.scale}</span>
-                  <span className="text-[10px] font-mono text-amber-500">{penScale}%</span>
-                </label>
-                <input type="range" min="5" max="50" value={penScale} onChange={(e) => setPenScale(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-300 flex justify-between">
-                  <span>{t.tipXOffset}</span>
-                  <span className="text-[10px] font-mono text-amber-500">{penOffsetX}%</span>
-                </label>
-                <input type="range" min="0" max="100" value={penOffsetX} onChange={(e) => setPenOffsetX(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-stone-300 flex justify-between">
-                  <span>{t.tipYOffset}</span>
-                  <span className="text-[10px] font-mono text-amber-500">{penOffsetY}%</span>
-                </label>
-                <input type="range" min="0" max="100" value={penOffsetY} onChange={(e) => setPenOffsetY(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer" />
-              </div>
-            </div>
-
-            {/* 10. Bottom Actions inside Sidebar */}
-            <div className="mt-auto space-y-3 pt-6 border-t border-white/5">
-              <button
-                id="btn-preview"
-                disabled={!mainImgUrl || isProcessing || isAnimating || isExporting}
-                onClick={elements.length === 0 ? prepareAnimation : () => startAnimation(false)}
-                className="w-full py-4 bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-stone-250 rounded-xl flex items-center justify-center gap-2 font-bold text-[11px] uppercase tracking-widest transition-all cursor-pointer border border-stone-850"
-              >
-                <Play className="w-4 h-4 text-amber-550" />
-                {isProcessing ? t.processingMap : t.previewSequence}
-              </button>
-
-              <button
-                disabled={!mainImgUrl || isProcessing || isAnimating || isExporting}
-                onClick={() => {
-                  setVideoUrl(null);
-                  setIsExporting(true);
-                  if (elements.length === 0) prepareAnimation();
-                  else startAnimation(true);
-                }}
-                className="w-full py-4 bg-amber-550 text-black font-bold text-[11px] rounded-xl hover:bg-amber-400 shadow-[0_0_30px_-10px_#f59e0b] disabled:opacity-50 active:scale-[0.98] transition-all uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Settings className="w-4 h-4 text-black" />
-                {t.generateExport}
-              </button>
-            </div>
-
-            {videoUrl && (
-              <div className="pt-2 flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4">
-                <button
-                  onClick={() => {
-                    const a = document.createElement('a');
-                    a.href = videoUrl;
-                    const mime = videoUrl.includes('webm') ? 'webm' : 'mp4'; 
-                    a.download = `cinematic-reveal.${mime}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                  }}
-                  className="w-full py-4 bg-stone-100 hover:bg-white text-black rounded-xl flex items-center justify-center gap-2 font-bold text-[11px] uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(255,255,255,0.2)] cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  {t.saveMedia}
-                </button>
-              </div>
-            )}
-
-          </div>
-        </motion.aside>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Center Canvas Area & Timeline Track */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-[#f4f5f8]">
           
           {/* Canvas Section */}
           <div className="flex-1 flex items-center justify-center p-8 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "40px 40px" }}></div>
+            {/* Whiteboard Dots Background */}
+            <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "radial-gradient(#64748b 1.5px, transparent 1.5px)", backgroundSize: "40px 40px" }}></div>
             
             {/* Canvas Aspect Box */}
             <div 
-              className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center p-4 z-5 bg-black/40"
-              style={{ backgroundColor: canvasBgColor === 'transparent' ? 'rgba(5,5,5,0.2)' : canvasBgColor }}
+              className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-slate-200 shadow-xl flex items-center justify-center p-4 z-5 bg-white/60 backdrop-blur-md animate-in fade-in"
+              style={{ backgroundColor: canvasBgColor === 'transparent' ? 'rgba(255,255,255,0.2)' : canvasBgColor }}
             >
+              {/* Floating Vertical Toolbar (Left of Canvas Area) */}
+              <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-3 bg-white p-2.5 rounded-2xl shadow-lg border border-slate-200/80 z-30">
+                <button
+                  type="button"
+                  onClick={() => { setIsSelectionMode(false); setIsEraser(false); }}
+                  className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer",
+                    !isSelectionMode && !isEraser 
+                      ? "bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100" 
+                      : "text-slate-400 hover:text-slate-700 hover:bg-slate-55 border border-transparent"
+                  )}
+                  title="Select Tool"
+                >
+                  <MousePointer className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setIsSelectionMode(true); setIsEraser(false); }}
+                  className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer",
+                    isSelectionMode && !isEraser
+                      ? "bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100" 
+                      : "text-slate-400 hover:text-slate-700 hover:bg-slate-55 border border-transparent"
+                  )}
+                  title="Brush Tool"
+                >
+                  <Brush className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setIsSelectionMode(true); setIsEraser(true); }}
+                  className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer",
+                    isSelectionMode && isEraser
+                      ? "bg-rose-50 text-rose-600 shadow-sm border border-rose-100" 
+                      : "text-slate-400 hover:text-slate-700 hover:bg-slate-55 border border-transparent"
+                  )}
+                  title="Eraser Tool"
+                >
+                  <Eraser className="w-4 h-4" />
+                </button>
+                <div className="h-px bg-slate-100 mx-1.5" />
+                <button
+                  type="button"
+                  onClick={() => setActiveLeftTab('adjust')}
+                  className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer",
+                    activeLeftTab === 'adjust'
+                      ? "bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100" 
+                      : "text-slate-400 hover:text-slate-700 hover:bg-slate-55 border border-transparent"
+                  )}
+                  title="Adjust Settings"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Floating Horizontal Toolbar (Bottom Center of Canvas Area) */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2.5 bg-white/95 backdrop-blur-sm px-4 py-2.5 rounded-full shadow-lg border border-slate-200/80 z-30">
+                <button
+                  type="button"
+                  disabled={!mainImgUrl || isProcessing || isAnimating || isExporting}
+                  onClick={elements.length === 0 ? prepareAnimation : () => startAnimation(false)}
+                  className="px-4.5 py-2.5 bg-indigo-50 hover:bg-indigo-100/70 disabled:opacity-50 text-indigo-700 text-[10.5px] font-bold uppercase rounded-full transition-all flex items-center justify-center gap-1.5 border border-indigo-100 shadow-sm cursor-pointer active:scale-95"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current text-indigo-600" />
+                  <span>{isProcessing ? t.processingMap : t.previewSequence}</span>
+                </button>
+                <div className="w-px h-5 bg-slate-200" />
+                <button
+                  type="button"
+                  disabled={!mainImgUrl || isProcessing || isAnimating || isExporting}
+                  onClick={prepareAnimation}
+                  className="px-4 py-2 hover:bg-slate-50 text-slate-600 hover:text-slate-800 disabled:opacity-50 text-[10.5px] font-bold uppercase rounded-full transition-all cursor-pointer active:scale-95 border border-transparent"
+                >
+                  Analyze Assets
+                </button>
+                <div className="w-px h-5 bg-slate-200" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMainImgUrl(null);
+                    setElements([]);
+                    setScenes([]);
+                    setStoryboardStatus('EMPTY');
+                    setStoryboardMode('IDLE');
+                    setAudioUrl(null);
+                    setAudioBlob(null);
+                    setTranscription([]);
+                    setVideoUrl(null);
+                  }}
+                  className="px-4 py-2 hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-[10.5px] font-bold uppercase rounded-full transition-all cursor-pointer active:scale-95 border border-transparent"
+                >
+                  Reset
+                </button>
+              </div>
+
               {storyboardStatus === 'EMPTY' && (
-                <div className="text-center space-y-5 max-w-md p-6 bg-stone-900/50 backdrop-blur-md rounded-2xl border border-stone-800/80 shadow-lg pointer-events-none z-20">
-                  <div className="w-14 h-14 mx-auto rounded-full bg-amber-500/10 flex items-center justify-center text-amber-550 animate-bounce">
+                <div className="text-center space-y-5 max-w-md p-7 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200 shadow-lg pointer-events-none z-20 animate-in fade-in zoom-in-95">
+                  <div className="w-14 h-14 mx-auto rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 animate-bounce">
                     <Sparkles className="w-7 h-7" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-base font-bold text-stone-200">Welcome to StoryFlow Workspace</h3>
-                    <p className="text-xs text-stone-400 leading-relaxed">
+                    <h3 className="text-base font-bold text-slate-800">Welcome to StoryFlow Workspace</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
                       Enter your script in the left panel and click <b>Create Storyboard</b> to segment your story into visual scene blocks automatically.
                     </p>
                   </div>
@@ -2958,8 +3075,8 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
 
               {storyboardStatus !== 'EMPTY' && !mainImgUrl && (
                 <div className="text-center space-y-4 opacity-50 z-20">
-                  <ImageIcon className="w-16 h-16 mx-auto stroke-1 text-stone-500" />
-                  <p className="text-sm font-light tracking-widest text-stone-400 uppercase font-display">{t.awaitingAsset}</p>
+                  <ImageIcon className="w-16 h-16 mx-auto stroke-1 text-slate-400" />
+                  <p className="text-sm font-light tracking-widest text-slate-550 uppercase font-display">{t.awaitingAsset}</p>
                 </div>
               )}
 
@@ -2981,341 +3098,247 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
           </div>
 
           {/* Bottom Timeline Section */}
-          {storyboardStatus === 'EMPTY' ? (
-            <div className="h-44 border-t border-white/5 bg-[#050505] flex flex-col items-center justify-center shrink-0 z-10 relative select-none">
-              <div className="text-center space-y-2 opacity-40">
-                <AudioLines className="w-8 h-8 mx-auto text-stone-500" />
-                <span className="text-xs font-semibold text-stone-400 tracking-wider uppercase block">Awaiting Script / Storyboard</span>
+          <div className="h-48 border-t border-slate-200 bg-white flex flex-col shrink-0 z-10 relative">
+            {/* Timeline Controls Header */}
+            <div className="h-10 border-b border-slate-200 px-6 flex items-center justify-between shrink-0 bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={!mainImgUrl || isProcessing}
+                  onClick={() => startAnimation(false)}
+                  className="w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-sm disabled:opacity-40 cursor-pointer border border-indigo-600"
+                  title="Play"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const canvas = canvasRef.current;
+                    if (canvas) {
+                      const ctx = canvas.getContext('2d');
+                      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+                  }}
+                  className="w-7 h-7 rounded-lg bg-white border border-slate-205 hover:bg-slate-50 text-slate-500 flex items-center justify-center shadow-sm cursor-pointer"
+                  title="Rewind / Clear Canvas Draw"
+                >
+                  <Undo2 className="w-3.5 h-3.5" />
+                </button>
+                <div className="w-px h-4 bg-slate-200" />
+                <span className="text-[10px] text-slate-500 font-mono font-bold">
+                  Duration: {currentTotalTime.toFixed(1)}s / Max: 1800s
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-550">
+                <AudioLines className="w-4 h-4 text-indigo-600" />
+                <span className="text-[10px] font-medium font-mono">
+                  {audioUrl ? 'Voiceover Active' : 'No Voiceover Audio'}
+                </span>
               </div>
             </div>
-          ) : (
-            <div className="h-44 border-t border-white/5 bg-[#080808] flex flex-col shrink-0 z-10 relative shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
-              
-              {/* Shimmer Overlay when editing */}
-              {storyboardMode === 'EDIT' && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-40 pointer-events-none cursor-not-allowed animate-pulse">
-                  <span className="text-xs font-semibold text-amber-500 flex items-center gap-2">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
-                    Updating scene...
-                  </span>
-                </div>
-              )}
 
-              {/* Timeline Controls Header */}
-              <div className="h-10 border-b border-white/5 px-6 flex items-center justify-between shrink-0 bg-stone-900/30">
-                <div className="flex items-center gap-3">
-                  <button
-                    disabled={!mainImgUrl || isProcessing}
-                    onClick={() => startAnimation(false)}
-                    className="w-7 h-7 rounded-lg bg-amber-500 hover:bg-amber-600 text-black flex items-center justify-center shadow-sm disabled:opacity-40 cursor-pointer border border-amber-550"
-                    title="Play"
+            {/* Timeline Tracks scrolling */}
+            <div className="flex-1 overflow-x-auto custom-scrollbar flex flex-col min-w-0 bg-slate-50/20">
+              {(() => {
+                const maxRulerTime = Math.max(60, currentTotalTime);
+                const tickCount = Math.ceil(maxRulerTime / 2) + 2;
+                const totalTimelineWidth = 80 + maxRulerTime * 30 + 100;
+                const barCount = Math.max(160, Math.ceil(maxRulerTime * 4.5));
+                return (
+                  <div 
+                    className="flex-grow flex flex-col select-none relative" 
+                    style={{ width: `${totalTimelineWidth}px` }}
                   >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      const canvas = canvasRef.current;
-                      if (canvas) {
-                        const ctx = canvas.getContext('2d');
-                        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-                      }
-                    }}
-                    className="w-7 h-7 rounded-lg bg-stone-900 border border-stone-800 hover:bg-stone-850 text-stone-400 flex items-center justify-center shadow-sm cursor-pointer"
-                    title="Rewind / Clear Canvas Draw"
-                  >
-                    <Undo2 className="w-3.5 h-3.5" />
-                  </button>
-                  <div className="w-px h-4 bg-stone-800" />
-                  <span className="text-[10px] text-stone-450 font-mono font-bold">
-                    Duration: {currentTotalTime.toFixed(1)}s / Max: 1800s
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <AudioLines className="w-4 h-4 text-amber-500" />
-                  <span className="text-[10px] text-stone-500 font-medium font-mono">
-                    {audioUrl ? 'Voiceover Active' : 'No Voiceover Audio'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Timeline Tracks scrolling */}
-              <div className="flex-1 overflow-x-auto custom-scrollbar flex flex-col min-w-0">
-                {(() => {
-                  const maxRulerTime = Math.max(60, currentTotalTime);
-                  const tickCount = Math.ceil(maxRulerTime / 2) + 2;
-                  const totalTimelineWidth = 80 + maxRulerTime * 30 + 100;
-                  const barCount = Math.max(160, Math.ceil(maxRulerTime * 4.5));
-                  return (
-                    <div 
-                      className="flex-1 flex flex-col select-none relative" 
-                      style={{ width: `${totalTimelineWidth}px` }}
-                    >
-                      {/* 1. Time Ruler */}
-                      <div className="h-6 border-b border-white/5 flex items-end relative shrink-0 bg-[#060606]">
-                        {Array.from({ length: tickCount }).map((_, i) => (
-                          <div 
-                            key={i} 
-                            className="absolute bottom-0 text-[8px] font-mono text-stone-650 flex flex-col items-center"
-                            style={{ left: `${80 + i * 60}px` }}
-                          >
-                            <span className="h-1.5 w-0.5 bg-stone-800 mb-0.5"></span>
-                            {Math.floor(i * 2 / 60).toString().padStart(2, '0')}:{(i * 2 % 60).toString().padStart(2, '0')}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* 2. Visual Scene/Elements track */}
-                      <div className="h-16 border-b border-white/5 flex items-center relative bg-stone-900/10 shrink-0">
-                        <div className="absolute left-4 flex items-center gap-1.5 z-10 w-20 pointer-events-auto">
-                          <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest pointer-events-none">
-                            Scenes
-                          </span>
-                          <button
-                            onClick={addNewTimelineElement}
-                            className="w-5 h-5 rounded bg-stone-900 border border-stone-805 hover:bg-stone-800 hover:border-stone-700 text-amber-500 flex items-center justify-center cursor-pointer shadow transition-colors"
-                            title={lang === 'en' ? 'Add Scene' : 'إضافة مشهد'}
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
+                    {/* 1. Time Ruler */}
+                    <div className="h-6 border-b border-slate-100 flex items-end relative shrink-0 bg-slate-50/50">
+                      {Array.from({ length: tickCount }).map((_, i) => (
+                        <div 
+                          key={i} 
+                          className="absolute bottom-0 text-[8px] font-mono text-slate-400 flex flex-col items-center"
+                          style={{ left: `${80 + i * 60}px` }}
+                        >
+                          <span className="h-1.5 w-px bg-slate-200 mb-0.5"></span>
+                          {Math.floor(i * 2 / 60).toString().padStart(2, '0')}:{(i * 2 % 60).toString().padStart(2, '0')}
                         </div>
+                      ))}
+                    </div>
+
+                    {/* 2. Visual Scene/Elements track */}
+                    <div className="h-16 border-b border-slate-100 flex items-center relative bg-white shrink-0">
+                      <div className="absolute left-4 flex items-center gap-1.5 z-10 w-20 pointer-events-auto">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pointer-events-none">
+                          Scenes
+                        </span>
+                        <button
+                          type="button"
+                          onClick={addNewTimelineElement}
+                          className="w-5 h-5 rounded bg-white border border-slate-250 hover:bg-slate-50 hover:border-slate-300 text-indigo-650 flex items-center justify-center cursor-pointer shadow-sm transition-all"
+                          title={lang === 'en' ? 'Add Scene' : 'إضافة مشهد'}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      
+                      {elements.map((el, idx) => {
+                        const blockLeft = el.startTime * 30; // 30px per second
+                        const blockWidth = el.duration * 30;
+                        const isSelected = selectedElementId === el.id;
                         
-                        {elements.map((el, idx) => {
-                          const blockLeft = el.startTime * 30; // 30px per second
-                          const blockWidth = el.duration * 30;
-                          const isSelected = selectedElementId === el.id;
-                          
-                          return (
+                        return (
+                          <div
+                            key={el.id}
+                            onPointerMove={(e) => handleTimelinePointerMove(e, el.id)}
+                            onPointerUp={handleTimelinePointerUp}
+                            onPointerCancel={handleTimelinePointerUp}
+                            className={cn(
+                              "absolute h-11 rounded-xl border flex items-center justify-between transition-all cursor-pointer shadow-sm select-none group pointer-events-auto",
+                              isSelected
+                                ? "bg-indigo-50 border-indigo-500 text-indigo-700 font-bold z-20 ring-1 ring-indigo-250"
+                                : "bg-white border-slate-200 text-slate-700 hover:border-slate-350 hover:bg-slate-50/50"
+                            )}
+                            style={{ left: `${80 + blockLeft}px`, width: `${Math.max(65, blockWidth)}px` }}
+                          >
+                            {/* Left Resize Handle */}
                             <div
-                              key={el.id}
-                              onPointerMove={(e) => handleTimelinePointerMove(e, el.id)}
-                              onPointerUp={handleTimelinePointerUp}
-                              onPointerCancel={handleTimelinePointerUp}
-                              className={cn(
-                                "absolute h-11 rounded-xl border flex items-center justify-between transition-all cursor-pointer shadow-sm select-none group pointer-events-auto",
-                                isSelected
-                                  ? "bg-amber-500/15 border-amber-500 text-amber-500 font-bold z-20 ring-1 ring-amber-500/30"
-                                  : "bg-[#090909] border-stone-850 text-stone-300 hover:border-stone-700 hover:bg-stone-900"
-                              )}
-                              style={{ left: `${80 + blockLeft}px`, width: `${Math.max(65, blockWidth)}px` }}
+                              onPointerDown={(e) => handleTimelinePointerDown(e, el, 'resize-left')}
+                              className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-indigo-500/10 active:bg-indigo-500/20 z-30 rounded-l-xl transition-colors"
+                              title={lang === 'en' ? 'Drag to resize' : 'اسحب لتغيير المدة'}
+                            />
+
+                            {/* Middle Body */}
+                            <div
+                              onPointerDown={(e) => handleTimelinePointerDown(e, el, 'move')}
+                              className="w-full h-full flex items-center pl-2.5 pr-2.5 py-1 overflow-hidden pointer-events-auto"
                             >
-                              {/* Left Resize Handle */}
-                              <div
-                                onPointerDown={(e) => handleTimelinePointerDown(e, el, 'resize-left')}
-                                className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-amber-500/20 active:bg-amber-500/30 z-30 rounded-l-xl transition-colors"
-                                title={lang === 'en' ? 'Drag to resize' : 'اسحب لتغيير المدة'}
-                              />
+                              <div className="flex items-center min-w-0 gap-1.5 flex-1 pr-1.5">
+                                {/* Visual Thumbnail Preview */}
+                                <div className="w-8 h-6 bg-slate-105 border border-slate-200 rounded overflow-hidden flex items-center justify-center relative shrink-0 select-none shadow-sm">
+                                  {mainImgUrl && el.bounds && el.bounds.maxX > el.bounds.minX ? (
+                                    <div className="relative w-full h-full overflow-hidden">
+                                      <img
+                                        src={mainImgUrl}
+                                        alt=""
+                                        className="absolute max-w-none origin-top-left"
+                                        style={{
+                                          left: `${-el.bounds.minX * (24 / Math.max(1, el.bounds.maxY - el.bounds.minY))}px`,
+                                          top: `${-el.bounds.minY * (24 / Math.max(1, el.bounds.maxY - el.bounds.minY))}px`,
+                                          width: `${(canvasRef.current?.width || 1) * (24 / Math.max(1, el.bounds.maxY - el.bounds.minY))}px`,
+                                          height: `${(canvasRef.current?.height || 1) * (24 / Math.max(1, el.bounds.maxY - el.bounds.minY))}px`,
+                                        }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
+                                  )}
 
-                              {/* Middle Body */}
-                              <div
-                                onPointerDown={(e) => handleTimelinePointerDown(e, el, 'move')}
-                                className="w-full h-full flex items-center pl-2.5 pr-2.5 py-1 overflow-hidden pointer-events-auto"
-                              >
-                                <div className="flex items-center min-w-0 gap-1.5 flex-1 pr-1.5">
-                                  {/* Visual Thumbnail Preview */}
-                                  <div className="w-8 h-6 bg-stone-950 border border-stone-850 rounded overflow-hidden flex items-center justify-center relative shrink-0 select-none shadow">
-                                    {mainImgUrl && el.bounds && el.bounds.maxX > el.bounds.minX ? (
-                                      <div className="relative w-full h-full overflow-hidden">
-                                        <img
-                                          src={mainImgUrl}
-                                          alt=""
-                                          className="absolute max-w-none origin-top-left"
-                                          style={{
-                                            left: `${-el.bounds.minX * (24 / Math.max(1, el.bounds.maxY - el.bounds.minY))}px`,
-                                            top: `${-el.bounds.minY * (24 / Math.max(1, el.bounds.maxY - el.bounds.minY))}px`,
-                                            width: `${(canvasRef.current?.width || 1) * (24 / Math.max(1, el.bounds.maxY - el.bounds.minY))}px`,
-                                            height: `${(canvasRef.current?.height || 1) * (24 / Math.max(1, el.bounds.maxY - el.bounds.minY))}px`,
-                                          }}
-                                        />
-                                      </div>
-                                    ) : (
-                                      <ImageIcon className="w-3.5 h-3.5 text-stone-600" />
-                                    )}
+                                  {/* Overlaid inline SVG path preview */}
+                                  {el.paths && el.paths.length > 0 && (
+                                    <svg
+                                      className="absolute inset-0 w-full h-full pointer-events-none"
+                                      viewBox={`${el.bounds.minX - 2} ${el.bounds.minY - 2} ${Math.max(5, el.bounds.maxX - el.bounds.minX) + 4} ${Math.max(5, el.bounds.maxY - el.bounds.minY) + 4}`}
+                                      fill="none"
+                                      stroke="#4f46e5"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <path d={getSvgPathData(el.paths)} />
+                                    </svg>
+                                  )}
+                                </div>
 
-                                    {/* Overlaid inline SVG path preview */}
-                                    {el.paths && el.paths.length > 0 && (
-                                      <svg
-                                        className="absolute inset-0 w-full h-full pointer-events-none"
-                                        viewBox={`${el.bounds.minX - 2} ${el.bounds.minY - 2} ${Math.max(5, el.bounds.maxX - el.bounds.minX) + 4} ${Math.max(5, el.bounds.maxY - el.bounds.minY) + 4}`}
-                                        fill="none"
-                                        stroke="#fbbf24"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                      >
-                                        <path d={getSvgPathData(el.paths)} />
-                                      </svg>
-                                    )}
-                                  </div>
-
-                                  <div className="flex flex-col min-w-0 leading-tight">
-                                    <span className="text-[9.5px] font-bold truncate text-stone-300">
-                                      {el.label || `El ${idx + 1}`}
-                                    </span>
-                                    <span className="text-[8px] font-mono opacity-50 font-medium text-stone-450">
-                                      {el.duration.toFixed(1)}s
-                                    </span>
-                                  </div>
+                                <div className="flex flex-col min-w-0 leading-tight">
+                                  <span className="text-[9.5px] font-bold truncate text-slate-700">
+                                    {el.label || `El ${idx + 1}`}
+                                  </span>
+                                  <span className="text-[8px] font-mono opacity-65 font-medium text-slate-500">
+                                    {el.duration.toFixed(1)}s
+                                  </span>
                                 </div>
                               </div>
-
-                              {/* Right Resize Handle */}
-                              <div
-                                onPointerDown={(e) => handleTimelinePointerDown(e, el, 'resize-right')}
-                                className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-amber-500/20 active:bg-amber-500/30 z-30 rounded-r-xl transition-colors"
-                                title={lang === 'en' ? 'Drag to resize' : 'اسحب لتغيير المدة'}
-                              />
-
-                              {/* Delete floating button */}
-                              <button
-                                onClick={(e) => deleteElement(e, el.id)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-[-6px] right-[-6px] w-4.5 h-4.5 bg-red-600 text-white rounded-full flex items-center justify-center shadow border border-red-500 hover:bg-red-700 cursor-pointer z-35"
-                                title={t.delete}
-                              >
-                                <X className="w-2.5 h-2.5" />
-                              </button>
                             </div>
-                          );
-                        })}
-                      </div>
 
-                      {/* 3. Audio/Voiceover waveform Track */}
-                      <div className="h-10 flex items-center relative bg-stone-950/10 shrink-0">
-                        <div className="absolute left-4 text-[9px] font-bold text-stone-500 uppercase tracking-widest pointer-events-none z-10 w-16">
-                          Voiceover
-                        </div>
-                        <div className="absolute inset-0 left-20 right-0 flex items-center h-full pointer-events-none opacity-45">
-                          <div className="flex items-center gap-0.5 w-full px-2">
-                            {Array.from({ length: barCount }).map((_, idx) => {
-                              const hVal = Math.sin(idx * 0.15) * 8 + Math.cos(idx * 0.05) * 6 + 18;
-                              return (
-                                <div 
-                                  key={idx} 
-                                  className={cn(
-                                    "w-0.5 rounded-full",
-                                    audioUrl ? "bg-amber-500" : "bg-stone-855"
-                                  )}
-                                  style={{ height: `${Math.max(2, hVal)}px` }}
-                                />
-                              );
-                            })}
+                            {/* Right Resize Handle */}
+                            <div
+                              onPointerDown={(e) => handleTimelinePointerDown(e, el, 'resize-right')}
+                              className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-indigo-500/10 active:bg-indigo-500/20 z-30 rounded-r-xl transition-colors"
+                              title={lang === 'en' ? 'Drag to resize' : 'اسحب لتغيير المدة'}
+                            />
+
+                            {/* Delete floating button */}
+                            <button
+                              type="button"
+                              onClick={(e) => deleteElement(e, el.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-[-6px] right-[-6px] w-4.5 h-4.5 bg-rose-600 text-white rounded-full flex items-center justify-center shadow border border-rose-500 hover:bg-rose-700 cursor-pointer z-35"
+                              title={t.delete}
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
                           </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* 3. Audio/Voiceover waveform Track */}
+                    <div className="h-10 flex items-center relative bg-slate-50/50 shrink-0">
+                      <div className="absolute left-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest pointer-events-none z-10 w-16">
+                        Voiceover
+                      </div>
+                      <div className="absolute inset-0 left-20 right-0 flex items-center h-full pointer-events-none opacity-45">
+                        <div className="flex items-center gap-0.5 w-full px-2">
+                          {Array.from({ length: barCount }).map((_, idx) => {
+                            const hVal = Math.sin(idx * 0.15) * 8 + Math.cos(idx * 0.05) * 6 + 18;
+                            return (
+                              <div 
+                                key={idx} 
+                                className={cn(
+                                  "w-0.5 rounded-full",
+                                  audioUrl ? "bg-indigo-500" : "bg-slate-300"
+                                )}
+                                style={{ height: `${Math.max(2, hVal)}px` }}
+                              />
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
-                  );
-                })()}
-              </div>
+                  </div>
+                );
+              })()}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Right Sidebar (Layer & Element Properties Editor) */}
-        {storyboardStatus !== 'EMPTY' && elements.length > 0 && (
-          <motion.aside 
-            id="sidebar-right"
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className={cn(
-              "w-80 shrink-0 border-l border-white/5 bg-[#080808]/80 p-5 flex flex-col h-full z-20 shadow-2xl backdrop-blur-xl custom-scrollbar relative",
-              isRtl ? "border-r border-l-0" : ""
-            )}
-          >
-            {isSelectionMode ? (
-               <div className="flex flex-col gap-4.5 p-5 h-full">
-                 <div className="flex justify-between items-center bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 shadow">
-                   <span className="text-[10px] font-bold tracking-widest text-amber-500 uppercase flex items-center gap-1.5">
-                     <Brush className="w-4 h-4" />
-                     {t.manualSelection}
-                   </span>
-                   <button onClick={() => setIsSelectionMode(false)} className="text-[10px] bg-amber-500 text-black px-3 py-1 rounded-lg font-bold hover:bg-amber-450 cursor-pointer shadow-md">
-                     {t.doneSelection}
-                   </button>
-                 </div>
-                 
-                 <div className="flex flex-col gap-1.5">
-                   <label className="text-[10px] font-bold tracking-widest text-stone-500 uppercase">{t.brushSize}</label>
-                   <div className="flex items-center gap-3">
-                     <input type="range" min="5" max="100" value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="accent-amber-500 h-1 bg-stone-800 rounded-full appearance-none cursor-pointer flex-1" />
-                     <span className="text-xs font-mono font-bold text-stone-400 w-8 text-right">{brushSize}px</span>
-                   </div>
-                 </div>
-
-                 <div className="flex bg-stone-900 rounded-lg p-1 gap-1 border border-stone-800">
-                   <button
-                     onClick={() => setIsEraser(false)}
-                     className={cn("flex-1 py-2 text-[10px] flex justify-center items-center gap-1.5 font-bold rounded-lg transition-colors cursor-pointer", !isEraser ? "bg-stone-800 text-amber-500" : "text-stone-500 hover:text-stone-300")}
-                   >
-                     <Brush className="w-3.5 h-3.5" />
-                     {t.brushMode}
-                   </button>
-                   <button
-                     onClick={() => setIsEraser(true)}
-                     className={cn("flex-1 py-2 text-[10px] flex justify-center items-center gap-1.5 font-bold rounded-lg transition-colors cursor-pointer", isEraser ? "bg-stone-800 text-red-500" : "text-stone-500 hover:text-stone-300")}
-                   >
-                     <Eraser className="w-3.5 h-3.5" />
-                     {t.eraser}
-                   </button>
-                 </div>
-
-                 <button onClick={addNewElement} className="flex items-center justify-center gap-2 w-full py-2.5 border border-stone-800 hover:border-amber-500/50 rounded-lg text-xs font-bold text-stone-300 transition-colors bg-[#0a0a0a] cursor-pointer hover:bg-stone-900/50 shadow-md">
-                   <Plus className="w-4 h-4 text-amber-500" />
-                   {t.addNewElement}
-                 </button>
-
-                 <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                   {elements.map((el, i) => (
-                     <div 
-                       key={el.id} 
-                       onMouseEnter={() => setHoveredElementId(el.id)}
-                       onMouseLeave={() => setHoveredElementId(null)}
-                       className="relative group flex gap-1.5"
-                     >
-                       <button 
-                         onClick={() => { setActiveElementId(el.id); setIsEraser(false); }}
-                         className={cn(
-                           "flex-1 flex items-center justify-between p-2.5 rounded-lg border transition-all text-left cursor-pointer",
-                           activeElementId === el.id && !isEraser ? "border-amber-500 bg-amber-500/10" : "border-stone-850 bg-[#0a0a0a] hover:border-stone-700 shadow-sm"
-                         )}
-                       >
-                         <span className={cn("text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5", activeElementId === el.id && !isEraser ? "text-amber-500" : "text-stone-400")}>
-                           {activeElementId === el.id && !isEraser && <Check className="w-3.5 h-3.5 text-amber-500" />}
-                           {el.label ? el.label : `${t.element} ${i + 1}`}
-                         </span>
-                         <span className="text-[9px] font-mono text-stone-550">{el.paths.length} paths</span>
-                       </button>
-                       <button onClick={(e) => deleteElement(e, el.id)} className="w-9 flex items-center justify-center text-stone-500 hover:text-red-500 bg-[#0a0a0a] border border-stone-800 rounded-lg hover:border-red-500/50 cursor-pointer shadow-sm" title={t.delete}>
-                         <Trash2 className="w-3.5 h-3.5" />
-                       </button>
-                     </div>
-                   ))}
-                 </div>
-               </div>
-            ) : (
+        {/* Right Sidebar (Layers / Elements) */}
+        {elements.length > 0 && (
+          !isSelectionMode ? (
+          <div className="w-80 shrink-0 border-l border-slate-200 bg-white z-20 flex flex-col text-slate-800">
             <div className="flex flex-col h-full">
               {/* Layers List Header */}
-              <div className="p-4 border-b border-white/5 flex justify-between items-center bg-stone-900/10">
-                <label className="text-[10px] font-bold tracking-widest text-stone-400 uppercase flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-amber-500" />
+              <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/30">
+                <label className="text-[10px] font-bold tracking-widest text-slate-555 uppercase flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-indigo-600" />
                   {t.elementsTitle}
-                  <button onClick={() => setIsSelectionMode(true)} className="ml-1.5 hover:text-amber-500 text-stone-500 transition-colors cursor-pointer" title={t.manualSelection}>
+                  <button onClick={() => setIsSelectionMode(true)} className="ml-1.5 hover:text-indigo-605 text-slate-400 transition-colors cursor-pointer border border-transparent bg-transparent" title={t.manualSelection}>
                     <Brush className="w-3.5 h-3.5" />
                   </button>
                 </label>
-                <div className="text-[10px] font-mono font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">{elements.length}</div>
+                <div className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">{elements.length}</div>
               </div>
               
-              <div className="p-4 border-b border-white/5 bg-stone-900/5">
-                <p className="text-[10px] text-stone-500 leading-relaxed">{t.elementsHelp}</p>
+              <div className="p-4 border-b border-slate-200 bg-slate-50/10">
+                <p className="text-[10px] text-slate-400 leading-relaxed">{t.elementsHelp}</p>
                 
                 {/* Total settings inside sidebar */}
-                <div className="flex gap-4 mt-3 pt-3 border-t border-white/5">
+                <div className="flex gap-4 mt-3 pt-3 border-t border-slate-100">
                   <div className="flex-1 flex gap-2 items-center">
-                    <label className="text-[9px] text-stone-450 font-bold uppercase">{t.fps}</label>
-                    <input type="number" min="15" max="60" value={fps} onChange={(e) => setFps(Number(e.target.value))} className="w-full bg-[#0a0a0a] border border-stone-800 rounded-lg p-1 text-xs text-stone-200 focus:border-amber-500/50 outline-none text-center shadow-inner font-semibold" />
+                    <label className="text-[9px] text-slate-500 font-bold uppercase">{t.fps}</label>
+                    <input type="number" min="15" max="60" value={fps} onChange={(e) => setFps(Number(e.target.value))} className="w-full bg-white border border-slate-205 rounded-lg p-1 text-xs text-slate-800 focus:border-indigo-500/50 outline-none text-center shadow-inner font-semibold" />
                   </div>
                   <div className="flex-1 flex gap-2 items-center">
-                    <label className="text-[9px] text-stone-455 font-bold uppercase" title={t.maxDurationInfo}>{t.totalDur}</label>
-                    <input type="number" min="1" max="1800" value={Math.round(currentTotalTime)} onChange={(e) => scaleTotalDuration(e.target.value)} className="w-full bg-[#0a0a0a] border border-stone-800 rounded-lg p-1 text-xs text-amber-500 focus:border-amber-500/50 outline-none text-center font-mono font-semibold shadow-inner" />
+                    <label className="text-[9px] text-slate-500 font-bold uppercase" title={t.maxDurationInfo}>{t.totalDur}</label>
+                    <input type="number" min="1" max="1800" value={Math.round(currentTotalTime)} onChange={(e) => scaleTotalDuration(e.target.value)} className="w-full bg-white border border-slate-205 rounded-lg p-1 text-xs text-indigo-600 focus:border-indigo-500/50 outline-none text-center font-mono font-semibold shadow-inner" />
                   </div>
                 </div>
               </div>
@@ -3331,96 +3354,98 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                     className={cn(
                       "group flex flex-col gap-2.5 p-3.5 rounded-xl border transition-all cursor-pointer shadow-sm",
                       selectedElementId === el.id 
-                        ? "border-amber-500 bg-amber-500/10 shadow-[0_0_10px_rgba(251,191,36,0.06)]" 
-                        : "border-stone-850 bg-[#0a0a0a] hover:border-stone-750",
-                      hoveredElementId === el.id && selectedElementId !== el.id && "border-stone-800 bg-stone-900/10"
+                        ? "border-indigo-500 bg-indigo-50/40 shadow-sm" 
+                        : "border-slate-200 bg-white hover:border-slate-350",
+                      hoveredElementId === el.id && selectedElementId !== el.id && "border-slate-300 bg-slate-50/30"
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <span className={cn(
                         "text-[10px] font-bold tracking-widest uppercase flex items-center gap-2",
-                        selectedElementId === el.id ? "text-amber-555" : "text-stone-400"
+                        selectedElementId === el.id ? "text-indigo-600" : "text-slate-500"
                       )}>
-                        <div className="flex flex-col leading-none text-[8px] text-stone-600">
-                          <button disabled={i === 0} onClick={(e) => { e.stopPropagation(); moveElement(i, -1); }} className="hover:text-amber-500 disabled:opacity-30 cursor-pointer">▲</button>
-                          <button disabled={i === elements.length - 1} onClick={(e) => { e.stopPropagation(); moveElement(i, 1); }} className="hover:text-amber-500 disabled:opacity-30 cursor-pointer">▼</button>
+                        <div className="flex flex-col leading-none text-[8px] text-slate-400">
+                          <button disabled={i === 0} onClick={(e) => { e.stopPropagation(); moveElement(i, -1); }} className="hover:text-indigo-600 disabled:opacity-30 cursor-pointer bg-transparent border-none">▲</button>
+                          <button disabled={i === elements.length - 1} onClick={(e) => { e.stopPropagation(); moveElement(i, 1); }} className="hover:text-indigo-600 disabled:opacity-30 cursor-pointer bg-transparent border-none">▼</button>
                         </div>
-                        {selectedElementId === el.id && <Check className="w-3.5 h-3.5 text-amber-500" />}
+                        {selectedElementId === el.id && <Check className="w-3.5 h-3.5 text-indigo-600" />}
                         {el.label ? el.label : `${t.element} ${i + 1}`}
                       </span>
                       <div className="flex gap-2.5 items-center">
-                        <span className="text-[9px] font-mono text-stone-500 border border-stone-805 bg-stone-950 px-1 rounded font-medium">{(el.points || el.paths?.flatMap(p=>p) || []).length} pts</span>
-                        <button onClick={(e) => deleteElement(e, el.id)} className="text-stone-500 hover:text-red-500 transition-colors" title={t.delete}>
+                        <span className="text-[9px] font-mono text-slate-400 border border-slate-200 bg-slate-50 px-1 rounded font-medium">{(el.points || el.paths?.flatMap(p=>p) || []).length} pts</span>
+                        <button onClick={(e) => deleteElement(e, el.id)} className="text-slate-450 hover:text-rose-600 transition-colors bg-transparent border-none cursor-pointer" title={t.delete}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
 
                     {el.wordIndex !== undefined && transcription[el.wordIndex] && (
-                      <div className="flex items-center justify-between px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20 shadow-inner">
-                        <span className="text-[9px] text-amber-500/60 font-bold uppercase flex items-center gap-1">
+                      <div className="flex items-center justify-between px-2 py-1 bg-indigo-50 rounded-lg border border-indigo-100 shadow-inner">
+                        <span className="text-[9px] text-indigo-600/60 font-bold uppercase flex items-center gap-1">
                           <Link className="w-3 h-3" />
                           {t.mapped}
                         </span>
-                        <span className="text-[10px] text-amber-400 font-medium">"{transcription[el.wordIndex].word}"</span>
+                        <span className="text-[10px] text-indigo-755 font-medium">"{transcription[el.wordIndex].word}"</span>
                       </div>
                     )}
 
                     <div className="flex gap-2">
                       <div className="flex-1 flex gap-1.5 items-center">
-                        <span className="text-[9px] text-stone-500 uppercase w-10 text-right font-medium">{t.startS}</span>
+                        <span className="text-[9px] text-slate-400 uppercase w-10 text-right font-medium">{t.startS}</span>
                         <input 
                           type="number" 
                           step="0.1"
                           min="0"
                           value={el.startTime} 
                           onChange={(e) => updateElementProperty(i, 'startTime', Number(e.target.value))} 
-                          className="bg-[#0a0a0a] border border-stone-850 rounded-lg p-1 text-xs text-amber-500 focus:border-amber-500/50 outline-none w-full font-mono text-center shadow-inner font-semibold" 
+                          className="bg-white border border-slate-200 rounded-lg p-1 text-xs text-indigo-600 focus:border-indigo-500/50 outline-none w-full font-mono text-center shadow-inner font-semibold" 
                         />
                       </div>
                       <div className="flex-1 flex gap-1.5 items-center">
-                        <span className="text-[9px] text-stone-500 uppercase w-10 text-right font-medium">{t.durS}</span>
+                        <span className="text-[9px] text-slate-400 uppercase w-10 text-right font-medium">{t.durS}</span>
                         <input 
                           type="number" 
                           step="0.1" 
                           min="0.1"
                           value={el.duration} 
                           onChange={(e) => updateElementProperty(i, 'duration', Number(e.target.value))} 
-                          className="bg-[#0a0a0a] border border-stone-855 rounded-lg p-1 text-xs text-amber-500 focus:border-amber-500/50 outline-none w-full font-mono text-center shadow-inner font-semibold" 
+                          className="bg-white border border-slate-200 rounded-lg p-1 text-xs text-indigo-600 focus:border-indigo-500/50 outline-none w-full font-mono text-center shadow-inner font-semibold" 
                         />
                       </div>
                     </div>
 
                     {selectedElementId === el.id && (
-                      <div className="mt-2.5 pt-2.5 border-t border-white/5 space-y-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="mt-2.5 pt-2.5 border-t border-slate-100 space-y-3" onClick={(e) => e.stopPropagation()}>
                         {/* Element Type selection */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[9px] text-stone-450 font-bold uppercase">{t.elementTypeLabel}</label>
-                          <div className="flex bg-stone-900 border border-stone-800 rounded-lg p-0.5 gap-0.5">
+                          <label className="text-[9px] text-slate-500 font-bold uppercase">{t.elementTypeLabel}</label>
+                          <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 gap-0.5">
                             <button
+                              type="button"
                               onClick={(e) => {
                                   e.stopPropagation();
                                   updateElementProperty(i, 'elementType', 'written');
                               }}
                               className={cn(
-                                "flex-1 py-1 text-[9px] rounded-md transition-all cursor-pointer font-medium",
+                                "flex-1 py-1 text-[9px] rounded-md transition-all cursor-pointer font-medium border border-transparent",
                                 (el.elementType || 'written') === 'written' 
-                                  ? "bg-stone-800 text-amber-500 shadow font-bold" 
-                                  : "text-stone-500 hover:text-stone-300"
+                                  ? "bg-white text-indigo-600 shadow-sm font-bold" 
+                                  : "text-slate-500 hover:text-slate-700"
                               )}
                             >
                               {t.typeWritten}
                             </button>
                             <button
+                              type="button"
                               onClick={(e) => {
                                   e.stopPropagation();
                                   updateElementProperty(i, 'elementType', 'visual');
                               }}
                               className={cn(
-                                "flex-1 py-1 text-[9px] rounded-md transition-all cursor-pointer font-medium",
+                                "flex-1 py-1 text-[9px] rounded-md transition-all cursor-pointer font-medium border border-transparent",
                                 el.elementType === 'visual' 
-                                  ? "bg-stone-800 text-amber-500 shadow font-bold" 
-                                  : "text-stone-500 hover:text-stone-300"
+                                  ? "bg-white text-indigo-600 shadow-sm font-bold" 
+                                  : "text-slate-500 hover:text-slate-700"
                               )}
                             >
                               {t.typeVisual}
@@ -3430,9 +3455,9 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
 
                         {/* Writing Direction Override */}
                         <div className="flex flex-col gap-1">
-                          <label className="text-[9px] text-stone-450 font-bold uppercase">{t.drawDirection}</label>
+                          <label className="text-[9px] text-slate-500 font-bold uppercase">{t.drawDirection}</label>
                           <select
-                            className="bg-[#0a0a0a] border border-stone-800 text-stone-300 text-[10px] rounded-lg p-1.5 outline-none focus:border-amber-500 transition-colors w-full cursor-pointer font-semibold shadow-inner"
+                            className="bg-white border border-slate-200 text-slate-700 text-[10px] rounded-lg p-1.5 outline-none focus:border-indigo-500 transition-colors w-full cursor-pointer font-semibold shadow-sm"
                             value={el.writingDirection || 'auto'}
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) => {
@@ -3450,21 +3475,108 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                 ))}
               </div>
             </div>
-            )}
-          </motion.aside>
+          </div>
+        ) : (
+          <div className="w-80 shrink-0 border-l border-slate-200 bg-white z-20 flex flex-col text-slate-800 p-6 space-y-4 animate-in slide-in-from-right">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase text-slate-600 tracking-wider">
+                {t.manualSelection}
+              </span>
+              <button 
+                type="button"
+                onClick={() => setIsSelectionMode(false)}
+                className="text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm cursor-pointer border border-transparent"
+              >
+                {t.exitSelection}
+              </button>
+            </div>
+
+            <p className="text-[10.5px] text-slate-500 leading-normal">
+              Brush tool is active. Click and drag over the canvas to group specific paths.
+            </p>
+
+            <div className="flex flex-col gap-1.5 pt-2">
+              <label className="text-[10px] text-slate-500 font-bold uppercase flex justify-between">
+                <span>{t.brushSize}</span>
+                <span className="text-indigo-600 font-bold">{brushSize}px</span>
+              </label>
+              <input 
+                type="range" 
+                min="5" 
+                max="100" 
+                value={brushSize} 
+                onChange={(e) => setBrushSize(Number(e.target.value))} 
+                className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" 
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsEraser(false)}
+                className={cn("flex-grow py-2 text-[10px] flex justify-center items-center gap-1.5 font-bold rounded-lg transition-all cursor-pointer border", !isEraser ? "bg-indigo-50 border-indigo-100 text-indigo-600 shadow-sm font-semibold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50")}
+              >
+                <Brush className="w-3.5 h-3.5" />
+                {t.brushMode}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEraser(true)}
+                className={cn("flex-grow py-2 text-[10px] flex justify-center items-center gap-1.5 font-bold rounded-lg transition-all cursor-pointer border", isEraser ? "bg-rose-50 border-rose-150 text-rose-600 shadow-sm font-semibold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50")}
+              >
+                <Eraser className="w-3.5 h-3.5" />
+                {t.eraser}
+              </button>
+            </div>
+
+            <button type="button" onClick={addNewElement} className="flex items-center justify-center gap-2 w-full py-2.5 border border-indigo-100 hover:bg-indigo-50/30 rounded-lg text-xs font-bold text-indigo-600 transition-all bg-white cursor-pointer shadow-sm">
+              <Plus className="w-4 h-4 text-indigo-600" />
+              {t.addNewElement}
+            </button>
+
+            <div className="flex flex-col gap-2 flex-grow overflow-y-auto pr-1 custom-scrollbar">
+              {elements.map((el, i) => (
+                <div 
+                  key={el.id} 
+                  onMouseEnter={() => setHoveredElementId(el.id)}
+                  onMouseLeave={() => setHoveredElementId(null)}
+                  className="relative group flex gap-1.5"
+                >
+                  <button 
+                    type="button"
+                    onClick={() => { setActiveElementId(el.id); setIsEraser(false); }}
+                    className={cn(
+                      "flex-grow flex items-center justify-between p-2.5 rounded-lg border transition-all text-left cursor-pointer",
+                      activeElementId === el.id && !isEraser ? "border-indigo-500 bg-indigo-50/40" : "border-slate-200 bg-white hover:border-slate-350 shadow-sm"
+                    )}
+                  >
+                    <span className={cn("text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5", activeElementId === el.id && !isEraser ? "text-indigo-600" : "text-slate-500")}>
+                      {activeElementId === el.id && !isEraser && <Check className="w-3.5 h-3.5 text-indigo-600" />}
+                      {el.label ? el.label : `${t.element} ${i + 1}`}
+                    </span>
+                    <span className="text-[9px] font-mono text-slate-400">{el.paths.length} paths</span>
+                  </button>
+                  <button type="button" onClick={(e) => deleteElement(e, el.id)} className="w-9 flex items-center justify-center text-slate-405 hover:text-rose-600 bg-white border border-slate-250 rounded-lg hover:border-rose-300 cursor-pointer shadow-sm" title={t.delete}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          )
         )}
 
       </main>
 
       {/* Footer */}
-      <footer className="h-10 bg-[#050505] border-t border-white/5 flex items-center justify-between px-8 text-[10px] text-stone-600 shrink-0 z-30 shadow-[0_-1px_3px_rgba(0,0,0,0.2)]">
+      <footer className="h-10 bg-white border-t border-slate-200 flex items-center justify-between px-8 text-[10px] text-slate-505 shrink-0 z-30 shadow-[0_-1px_3px_rgba(0,0,0,0.015)]">
         <div className="flex gap-6">
           <span>FFmpeg.wasm Embedded</span>
           <span>{t.clientSideRender}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="uppercase tracking-tighter">{t.systemActive}</span>
+          <span className="uppercase tracking-tighter font-semibold">{t.systemActive}</span>
         </div>
       </footer>
 
@@ -3478,7 +3590,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsShareModalOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
 
             {/* Modal Body */}
@@ -3486,59 +3598,61 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-[#0b0b0b] rounded-3xl shadow-2xl border border-stone-800 max-w-lg w-full p-6 relative z-10 overflow-hidden text-stone-200"
+              className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 relative z-10 overflow-hidden text-slate-800"
             >
               {/* Decorative accent gradient top bar */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
               {/* Close Button */}
               <button 
+                type="button"
                 onClick={() => setIsShareModalOpen(false)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:text-stone-200 hover:bg-stone-900 transition-colors cursor-pointer"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer border border-transparent bg-transparent"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex flex-col gap-4">
-                <div className="space-y-1">
-                  <h3 className="text-base font-bold text-stone-200 flex items-center gap-2">
-                    <Link className="w-5 h-5 text-amber-500" />
+                <div className="space-y-1 pt-2">
+                  <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <Link className="w-5 h-5 text-indigo-600" />
                     {t.shareTitle}
                   </h3>
-                  <p className="text-xs text-stone-500">{t.shareSubtitle}</p>
+                  <p className="text-xs text-slate-500">{t.shareSubtitle}</p>
                 </div>
 
                 {/* Local Network Share Section */}
-                <div className="p-4 rounded-2xl bg-[#0f0f0f] border border-stone-850 space-y-3">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                   <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wider">{t.localNetwork}</h4>
-                    <p className="text-[11px] text-stone-400 leading-normal">{t.localNetworkDesc}</p>
+                    <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-wider">{t.localNetwork}</h4>
+                    <p className="text-[11px] text-slate-505 leading-normal">{t.localNetworkDesc}</p>
                   </div>
 
                   {localNetworkUrl ? (
                     <div className="flex flex-col sm:flex-row items-center gap-4">
                       {/* Link field and copy */}
-                      <div className="flex bg-[#070707] border border-stone-800 rounded-xl p-1.5 items-center gap-2 shadow-inner flex-1 w-full">
+                      <div className="flex bg-white border border-slate-200 rounded-xl p-1.5 items-center gap-2 shadow-inner flex-1 w-full">
                         <input 
                           type="text" 
                           readOnly 
                           value={localNetworkUrl}
-                          className="flex-1 text-xs text-stone-300 bg-transparent outline-none px-2 font-mono font-medium"
+                          className="flex-1 text-xs text-slate-700 bg-transparent outline-none px-2 font-mono font-medium"
                         />
                         <button
+                          type="button"
                           onClick={() => {
                             navigator.clipboard.writeText(localNetworkUrl);
                             setCopiedUrlType('local');
                             setTimeout(() => setCopiedUrlType(null), 2000);
                           }}
-                          className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-550 text-[10px] font-bold rounded-lg transition-colors cursor-pointer"
+                          className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 text-[10px] font-bold rounded-lg transition-colors cursor-pointer border border-transparent"
                         >
                           {copiedUrlType === 'local' ? t.copied : t.copyLink}
                         </button>
                       </div>
 
                       {/* QR Code */}
-                      <div className="shrink-0 flex flex-col items-center gap-1.5 p-2 bg-white rounded-2xl border border-slate-200 shadow">
+                      <div className="shrink-0 flex flex-col items-center gap-1.5 p-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
                         <img 
                           src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(localNetworkUrl)}`} 
                           alt="QR Code" 
@@ -3548,35 +3662,36 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                       </div>
                     </div>
                   ) : (
-                    <div className="text-stone-500 text-xs italic">Loading local IP address...</div>
+                    <div className="text-slate-400 text-xs italic">Loading local IP address...</div>
                   )}
                 </div>
 
                 {/* Public Internet Share Section */}
-                <div className="p-4 rounded-2xl bg-[#0f0f0f] border border-stone-850 space-y-3">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                   <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wider">{t.publicInternet}</h4>
-                    <p className="text-[11px] text-stone-400 leading-normal">{t.publicInternetDesc}</p>
+                    <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-wider">{t.publicInternet}</h4>
+                    <p className="text-[11px] text-slate-505 leading-normal">{t.publicInternetDesc}</p>
                   </div>
 
                   {publicTunnelUrl ? (
                     <div className="flex flex-col sm:flex-row items-center gap-4">
                       {/* Link field, copy and password */}
                       <div className="flex-1 w-full space-y-3">
-                        <div className="flex bg-[#070707] border border-stone-800 rounded-xl p-1.5 items-center gap-2 shadow-inner">
+                        <div className="flex bg-white border border-slate-200 rounded-xl p-1.5 items-center gap-2 shadow-inner">
                           <input 
                             type="text" 
                             readOnly 
                             value={publicTunnelUrl}
-                            className="flex-1 text-xs text-stone-300 bg-transparent outline-none px-2 font-mono font-medium"
+                            className="flex-1 text-xs text-slate-700 bg-transparent outline-none px-2 font-mono font-medium"
                           />
                           <button
+                            type="button"
                             onClick={() => {
                               navigator.clipboard.writeText(publicTunnelUrl);
                               setCopiedUrlType('public');
                               setTimeout(() => setCopiedUrlType(null), 2000);
                             }}
-                            className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-550 text-[10px] font-bold rounded-lg transition-colors cursor-pointer"
+                            className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 text-[10px] font-bold rounded-lg transition-colors cursor-pointer border border-transparent"
                           >
                             {copiedUrlType === 'public' ? t.copied : t.copyLink}
                           </button>

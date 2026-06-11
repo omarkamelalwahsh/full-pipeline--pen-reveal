@@ -21,9 +21,9 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-stone-800 rounded-full;
+  @apply bg-slate-200 rounded-full;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply bg-stone-700;
+  @apply bg-slate-300;
 }
