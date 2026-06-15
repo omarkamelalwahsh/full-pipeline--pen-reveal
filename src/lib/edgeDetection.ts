@@ -293,7 +293,6 @@ export function detectEdgesAndExtractPaths(
 
   // 4. Cluster paths into "Elements" based on bounding box overlaps / proximity
   // For simplicity, we can use a basic grid-based clustering or bounding box inflation
-  const components: PathComponent[] = [];
   
   // Create initial components (each path is a component)
   const initialComponents = rawPaths.map(path => {

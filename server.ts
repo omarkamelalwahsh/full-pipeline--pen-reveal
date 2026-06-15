@@ -9,6 +9,33 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+interface StoryboardStep {
+  titleAr: string;
+  titleEn: string;
+  scriptAr: string;
+  scriptEn: string;
+  desc: string;
+  keywords: string[];
+}
+
+interface SyncElement {
+  id: string;
+  bounds: { minX: number; minY: number; maxX: number; maxY: number };
+}
+
+interface Word {
+  word: string;
+  start: number;
+  end: number;
+}
+
+interface StoryboardScene {
+  scene_id?: string;
+  scene_number: number;
+  text: string;
+  duration_seconds: number;
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -36,7 +63,6 @@ async function startServer() {
         case '\'': return '&apos;';
         case '"': return '&quot;';
         default: return c;
-        // Comment
       }
     });
   }
@@ -106,7 +132,7 @@ async function startServer() {
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   // Helper to call ai.models.generateContent with fallback models and retry on 503/UNAVAILABLE or 429/RESOURCE_EXHAUSTED errors
-  async function generateContentWithRetry(params: any, options: { maxRetries?: number; initialDelay?: number } = {}) {
+  async function generateContentWithRetry(params: Parameters<typeof ai.models.generateContent>[0], options: { maxRetries?: number; initialDelay?: number } = {}) {
     const maxRetries = options.maxRetries ?? 2; // Up to 2 retries per model (total 3 attempts per model)
     const initialDelay = options.initialDelay ?? 1000; // 1 second base delay
 
@@ -184,7 +210,7 @@ async function startServer() {
         Return the result as a JSON array of objects.
       `;
 
-      let transcription: any[] = [];
+      let transcription: Word[] = [];
       try {
         const response = await generateContentWithRetry({
           model: "gemini-2.5-flash",
@@ -240,8 +266,8 @@ async function startServer() {
   // API Route for Auto-Syncing OCR elements to Transcription
   app.post("/api/sync-elements", upload.single("image"), async (req, res) => {
     const { data } = req.body;
-    let elements: any[] = [];
-    let transcription: any[] = [];
+    let elements: SyncElement[] = [];
+    let transcription: Word[] = [];
     
     try {
       if (data) {
@@ -261,7 +287,7 @@ async function startServer() {
       const prompt = `
         Look at this image. I have extracted some visual elements (path components) from it.
         Here are the bounding boxes for each element:
-        ${JSON.stringify(elements.map((el: any) => ({ id: el.id, bounds: el.bounds })))}
+        ${JSON.stringify(elements.map((el: SyncElement) => ({ id: el.id, bounds: el.bounds })))}
 
         I also have an audio transcription:
         ${JSON.stringify(transcription)}
@@ -306,7 +332,7 @@ async function startServer() {
         console.warn("AI OCR mapping failed or timed out, using sequential distribution fallback:", err.message);
         // Distribute elements sequentially across transcription words
         mapping = {};
-        elements.forEach((el: any, idx: number) => {
+        elements.forEach((el: SyncElement, idx: number) => {
           mapping[el.id] = idx % Math.max(1, transcription.length);
         });
       }
@@ -564,7 +590,7 @@ async function startServer() {
 
       console.log("Image editing model failed or was throttled. Launching AI-assisted Vector Storyboard editor fallback...");
 
-      let stepsToUse = clientSteps;
+      let stepsToUse: StoryboardStep[] = clientSteps;
       if (!stepsToUse || !Array.isArray(stepsToUse) || stepsToUse.length === 0) {
         stepsToUse = [
           { titleAr: "مقدمة لوحة القصة", titleEn: "Storyboard Introduction", scriptAr: "مرحباً بكم في قصتنا الممتعة", scriptEn: "Welcome to our fun narrative journey", desc: "A clean whiteboard doodle showing a laptop screen with a loading bar", keywords: ["intro", "start"] },
@@ -594,7 +620,7 @@ async function startServer() {
         Do not output any markdown formatting other than JSON.
       `;
 
-      let updatedSteps = stepsToUse;
+      let updatedSteps: StoryboardStep[] = stepsToUse;
       try {
         const rewriteRes = await generateContentWithRetry({
           model: "gemini-2.5-flash",
@@ -722,7 +748,7 @@ async function startServer() {
   });
 
   // Helper to parse transcription script into 5 structured sequential scenes with Gemini
-  async function parseScriptIntoSteps(text: string): Promise<Array<{ titleAr: string; titleEn: string; scriptAr: string; scriptEn: string; desc: string; keywords: string[] }>> {
+  async function parseScriptIntoSteps(text: string): Promise<StoryboardStep[]> {
     try {
       const prompt = `
         You are an expert storyboard visualizer.
@@ -1098,7 +1124,7 @@ async function startServer() {
         Return the result as a JSON array of objects with keys: word, start, end.
       `;
 
-      let transcription: any[] = [];
+      let transcription: Word[] = [];
       try {
         const transResponse = await generateContentWithRetry({
           model: "gemini-2.5-flash",
@@ -1135,7 +1161,7 @@ async function startServer() {
         const estimatedDuration = pcmBuffer.length / (24000 * 2);
         const words = script.split(/\s+/).filter(Boolean);
         const secPerWord = estimatedDuration / Math.max(1, words.length);
-        transcription = words.map((w: string, i: number) => ({
+        transcription = words.map((w: string, i: number): Word => ({
           word: w,
           start: Number((i * secPerWord).toFixed(1)),
           end: Number(((i + 1) * secPerWord).toFixed(1))
@@ -1429,7 +1455,7 @@ Logic Guidelines:
     return addresses;
   }
 
-  app.get("/api/network-info", async (req, res) => {
+  app.get("/api/network-info", async (_req, res) => {
     const localIps = getLocalIpAddresses();
     const localUrl = localIps.length > 0 ? `http://${localIps[0]}:${PORT}` : `http://localhost:${PORT}`;
     res.json({
@@ -1439,7 +1465,7 @@ Logic Guidelines:
     });
   });
 
-  app.post("/api/start-tunnel", async (req, res) => {
+  app.post("/api/start-tunnel", async (_req, res) => {
     if (tunnelUrl) {
       return res.json({ url: tunnelUrl, publicIp: tunnelPublicIp });
     }
@@ -1531,7 +1557,7 @@ Logic Guidelines:
         Do not include any conversational text or markdown blocks, only the raw JSON.
       `;
 
-      let scenes: any[] = [];
+      let scenes: StoryboardScene[] = [];
       try {
         const response = await generateContentWithRetry({
           model: "gemini-2.5-flash",
@@ -1567,7 +1593,7 @@ Logic Guidelines:
         while (paragraphs.length < 5) {
           paragraphs.push(`Continuing narrative... Scene ${paragraphs.length + 1}`);
         }
-        scenes = paragraphs.map((text, i) => {
+        scenes = paragraphs.map((text, i): StoryboardScene => {
           const wordCount = text.split(/\s+/).length;
           return {
             scene_number: i + 1,
@@ -1595,7 +1621,7 @@ Logic Guidelines:
   // API Route for Pipeline Edit (targeted incremental update)
   app.put("/api/pipeline/edit", async (req, res) => {
     try {
-      const { project_id, scene_id, text } = req.body;
+      const { scene_id, text } = req.body;
       if (!scene_id || text === undefined) {
         return res.status(400).json({ error: "Missing scene_id or text" });
       }
@@ -1630,20 +1656,28 @@ Logic Guidelines:
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`\n🚀 Server is running!`);
-    console.log(`🏠 Local:            http://localhost:${PORT}`);
-    const localIps = getLocalIpAddresses();
-    localIps.forEach(ip => {
-      console.log(`🌐 On Your Network:  http://${ip}:${PORT}`);
+  if (!process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`\n🚀 Server is running!`);
+      console.log(`🏠 Local:            http://localhost:${PORT}`);
+      const localIps = getLocalIpAddresses();
+      localIps.forEach(ip => {
+        console.log(`🌐 On Your Network:  http://${ip}:${PORT}`);
+      });
+      console.log(`\n💡 To share this publicly over the internet, click "Share / Invite" in the UI.\n`);
     });
-    console.log(`\n💡 To share this publicly over the internet, click "Share / Invite" in the UI.\n`);
-  });
+  }
+  
+  return app;
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export { startServer };

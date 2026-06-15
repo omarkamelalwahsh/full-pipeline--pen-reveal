@@ -1,7 +1,29 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { UploadCloud, Play, Download, Settings, Image as ImageIcon, Languages, GripVertical, Plus, Brush, Check, Trash2, Eraser, Volume2, Sparkles, Loader2, MousePointer, X, Undo2, Link, Layers, Eye, EyeOff, Lock, Unlock, Square, Circle, Type, AudioLines } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  UploadCloud, 
+  Play, 
+  Download, 
+  Settings, 
+  Image as ImageIcon, 
+  Languages, 
+  Plus, 
+  Brush, 
+  Check, 
+  Trash2, 
+  Eraser, 
+  Volume2, 
+  Sparkles, 
+  Loader2, 
+  MousePointer, 
+  X, 
+  Undo2, 
+  Link, 
+  Layers, 
+  AudioLines 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { detectEdgesAndExtractPaths, PathComponent, Point } from './lib/edgeDetection';
+
+import { detectEdgesAndExtractPaths, Point } from './lib/edgeDetection';
 import { cn } from './lib/utils';
 
 // Fallback SVG pen if user doesn't upload one
@@ -435,12 +457,10 @@ export default function Workspace() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState({ text: '', percentage: 0 });
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [hoveredElementId, setHoveredElementId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
 
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioDuration, setAudioDuration] = useState<number>(0);
   const [transcription, setTranscription] = useState<Word[]>([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -526,7 +546,6 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
       setActiveSceneText('');
     }
   }, [selectedElementId, scenes]);
-  const [rawPaths, setRawPaths] = useState<Point[][]>([]);
   const [unassignedPaths, setUnassignedPaths] = useState<Point[][]>([]);
   
   // Manual Selection State
@@ -553,7 +572,6 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
   const [canvasBgColor, setCanvasBgColor] = useState('#050505');
   const [drawDirection, setDrawDirection] = useState<'default' | 'ltr' | 'rtl' | 'ttb' | 'btt'>('default');
   const [activeLeftTab, setActiveLeftTab] = useState<'assets' | 'script' | 'adjust' | null>('assets');
-  const [isHandEditorOpen, setIsHandEditorOpen] = useState(false);
 
   // Trigger recalculation on sensitivity or mode change
   useEffect(() => {
@@ -575,7 +593,6 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
   const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setAudioBlob(file);
       const url = URL.createObjectURL(file);
       setAudioUrl(url);
       
@@ -1077,7 +1094,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     setIsMouseDown(false);
     
     // Sync draft to React state
-    const newElements = draftElementsRef.current.map((el, i) => {
+    const newElements = draftElementsRef.current.map((el) => {
         const direction = el.writingDirection === 'rtl' ? 'rtl' : el.writingDirection === 'ltr' ? 'ltr' : drawDirection;
         const points = flattenPaths(el.paths, direction, el.wordIndex);
         return { ...el, points, duration: 2.0 };
@@ -1332,7 +1349,6 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     const density = Math.max(1, Math.floor(canvas.width / 400));
     const mode = colorMode === 'paint' ? 'skeleton' : 'edge';
     const extraction = detectEdgesAndExtractPaths(imageData, density, 2, mode, edgeSensitivity);
-    setRawPaths(extraction.rawPaths);
     setUnassignedPaths([]);
 
     let newElements: ElementSequence[] = [];
@@ -1730,7 +1746,19 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
         mediaRecorder.onstop = () => {
           const videoBlob = new Blob(chunks, { type: mediaRecorder?.mimeType || mimeType });
           const url = URL.createObjectURL(videoBlob);
-          setVideoUrl(url);
+          
+          // Trigger automatic download
+          const a = document.createElement('a');
+          a.href = url;
+          const mimeExt = mimeType.includes('webm') ? 'webm' : 'mp4'; 
+          a.download = `cinematic-reveal.${mimeExt}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          
+          // Clean up URL object after download
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          
           setProgress({ text: t.exportComplete, percentage: 100 });
           setIsExporting(false);
         };
@@ -1934,11 +1962,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     animationRef.current = requestAnimationFrame(drawFrame);
   };
 
-  const updateElementSetting = (index: number, field: 'startTime' | 'duration', value: number) => {
-    const newElements = [...elements];
-    newElements[index][field] = value;
-    setElements(newElements);
-  };
+
 
   const handleTimelinePointerDown = (
     e: React.PointerEvent<HTMLDivElement>,
@@ -2044,7 +2068,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
         setScenes(data.scenes);
         
         let currentStart = 0;
-        const newElements: ElementSequence[] = data.scenes.map((scene: StoryboardScene, idx: number) => {
+        const newElements: ElementSequence[] = data.scenes.map((scene: StoryboardScene) => {
           const dur = scene.duration_seconds || 5;
           const start = currentStart;
           currentStart += dur;
@@ -2127,7 +2151,11 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     }
   };
 
-  const updateElementProperty = (index: number, field: string, value: any) => {
+  const updateElementProperty = <K extends keyof ElementSequence>(
+    index: number,
+    field: K,
+    value: ElementSequence[K]
+  ) => {
     const newElements = [...elements];
     const el = { ...newElements[index], [field]: value };
     const direction = el.writingDirection === 'rtl' ? 'rtl' : el.writingDirection === 'ltr' ? 'ltr' : drawDirection;
@@ -2320,7 +2348,6 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
           <button
             disabled={!mainImgUrl || isProcessing || isAnimating || isExporting}
             onClick={() => {
-              setVideoUrl(null);
               setIsExporting(true);
               if (elements.length === 0) prepareAnimation();
               else startAnimation(true);
@@ -3049,9 +3076,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                     setStoryboardStatus('EMPTY');
                     setStoryboardMode('IDLE');
                     setAudioUrl(null);
-                    setAudioBlob(null);
                     setTranscription([]);
-                    setVideoUrl(null);
                   }}
                   className="px-4 py-2 hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-[10.5px] font-bold uppercase rounded-full transition-all cursor-pointer active:scale-95 border border-transparent"
                 >
@@ -3461,7 +3486,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                             value={el.writingDirection || 'auto'}
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) => {
-                              updateElementProperty(i, 'writingDirection', e.target.value);
+                              updateElementProperty(i, 'writingDirection', e.target.value as 'auto' | 'rtl' | 'ltr');
                             }}
                           >
                             <option value="auto">{t.dirDefault} (Auto)</option>
