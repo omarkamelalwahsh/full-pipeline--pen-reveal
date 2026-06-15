@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pen-Reveal Studio — Full Pipeline Documentation</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --indigo: #6366f1;
+      --indigo-light: #eef2ff;
+      --violet: #8b5cf6;
+      --green: #22c55e;
+      --green-light: #f0fdf4;
+      --amber: #f59e0b;
+      --amber-light: #fef3c7;
+      --rose: #ef4444;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', 'Noto Kufi Arabic', sans-serif;
+      background: #ffffff;
+      color: var(--slate-800);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 56px;
+    }
+
+    /* Cover Page */
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 50%, #f0fdf4 100%);
+      padding: 80px 40px;
+      page-break-after: always;
+    }
+
+    .cover-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 32px;
+      box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+    }
+
+    .cover-logo-dot {
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .cover h1 {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--slate-900);
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+
+    .cover h1 span { color: var(--indigo); font-weight: 400; }
+
+    .cover-subtitle {
+      font-size: 18px;
+      color: var(--slate-500);
+      font-weight: 500;
+      margin-bottom: 40px;
+    }
+
+    .cover-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .cover-badge {
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .badge-indigo { background: var(--indigo-light); color: var(--indigo); border: 1px solid #c7d2fe; }
+    .badge-green { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
+    .badge-amber { background: var(--amber-light); color: #b45309; border: 1px solid #fde68a; }
+
+    .cover-date {
+      margin-top: 48px;
+      font-size: 13px;
+      color: var(--slate-400);
+      font-weight: 500;
+    }
+
+    /* Section Headers */
+    .section {
+      page-break-inside: avoid;
+      margin-bottom: 56px;
+    }
+
+    .section-number {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--indigo);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .section-number::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--slate-200);
+    }
+
+    h2 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--slate-900);
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+      direction: ltr;
+      text-align: left;
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--slate-800);
+      margin-bottom: 12px;
+      margin-top: 24px;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .section-desc {
+      font-size: 14px;
+      color: var(--slate-500);
+      margin-bottom: 24px;
+      line-height: 1.8;
+      direction: rtl;
+      text-align: right;
+    }
+
+    .section-desc-en {
+      direction: ltr;
+      text-align: left;
+      font-style: italic;
+      color: var(--slate-400);
+      font-size: 13px;
+      margin-top: -16px;
+      margin-bottom: 24px;
+    }
+
+    /* Mermaid Diagrams */
+    .diagram-container {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 32px 24px;
+      margin: 20px 0;
+      overflow-x: auto;
+      direction: ltr;
+      text-align: center;
+    }
+
+    .diagram-caption {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--slate-500);
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: var(--slate-100);
+      border-radius: 8px;
+      display: inline-block;
+      direction: rtl;
+    }
+
+    .diagram-caption-wrapper {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+      direction: ltr;
+      text-align: left;
+    }
+
+    thead th {
+      background: var(--slate-900);
+      color: white;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    thead th:first-child { border-radius: 10px 0 0 0; }
+    thead th:last-child { border-radius: 0 10px 0 0; }
+
+    tbody td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--slate-100);
+      color: var(--slate-700);
+    }
+
+    tbody tr:nth-child(even) { background: var(--slate-50); }
+    tbody tr:hover { background: var(--indigo-light); }
+
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: var(--slate-100);
+      color: var(--indigo);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .code-block {
+      background: var(--slate-900);
+      color: #e2e8f0;
+      padding: 20px 24px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12.5px;
+      line-height: 1.8;
+      overflow-x: auto;
+      direction: ltr;
+      text-align: left;
+      margin: 16px 0;
+    }
+
+    .code-block .keyword { color: #c084fc; }
+    .code-block .string { color: #86efac; }
+    .code-block .number { color: #fbbf24; }
+    .code-block .comment { color: #64748b; font-style: italic; }
+
+    /* Info Boxes */
+    .info-box {
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 13px;
+      line-height: 1.7;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .info-box-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+
+    .info-indigo { background: var(--indigo-light); border: 1px solid #c7d2fe; color: #4338ca; }
+    .info-green { background: var(--green-light); border: 1px solid #bbf7d0; color: #166534; }
+    .info-amber { background: var(--amber-light); border: 1px solid #fde68a; color: #92400e; }
+
+    /* State boxes */
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 20px 0;
+      direction: ltr;
+    }
+
+    .state-card {
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 2px solid;
+    }
+
+    .state-card h4 {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .state-card p {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .state-empty { background: #fff1f2; border-color: #fecdd3; }
+    .state-empty h4 { color: #be123c; }
+    .state-processing { background: #fef3c7; border-color: #fde68a; }
+    .state-processing h4 { color: #b45309; }
+    .state-active { background: #f0fdf4; border-color: #bbf7d0; }
+    .state-active h4 { color: #166534; }
+
+    /* File list */
+    .file-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+      direction: ltr;
+    }
+
+    .file-card {
+      padding: 16px;
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+
+    .file-card:hover { border-color: var(--indigo); background: var(--indigo-light); }
+
+    .file-name {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--indigo);
+      margin-bottom: 4px;
+    }
+
+    .file-desc {
+      font-size: 11px;
+      color: var(--slate-500);
+      line-height: 1.5;
+    }
+
+    /* Proportional bar demo */
+    .prop-bar {
+      display: flex;
+      height: 28px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+      direction: ltr;
+    }
+
+    .prop-bar div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: 1px;
+    }
+
+    /* Page breaks */
+    .page-break { page-break-before: always; }
+
+    /* Footer */
+    .doc-footer {
+      text-align: center;
+      padding: 40px;
+      border-top: 1px solid var(--slate-200);
+      margin-top: 60px;
+      color: var(--slate-400);
+      font-size: 12px;
+    }
+
+    @media print {
+      .page { padding: 32px 40px; }
+      .cover { min-height: auto; padding: 60px 40px; }
+      .section { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════ COVER PAGE ═══════ -->
+  <div class="cover">
+    <div class="cover-logo">
+      <div class="cover-logo-dot"></div>
+    </div>
+    <h1>Pen-Reveal <span>Studio</span></h1>
+    <p class="cover-subtitle">Full Pipeline Technical Documentation</p>
+    <p class="cover-subtitle" style="font-size:15px; margin-top:-28px;">توثيق تقني شامل لخط أنابيب النظام الكامل</p>
+    <div class="cover-meta">
+      <span class="cover-badge badge-indigo">React + Express</span>
+      <span class="cover-badge badge-green">Gemini 2.5 AI</span>
+      <span class="cover-badge badge-amber">Vercel Serverless</span>
+    </div>
+    <p class="cover-date">Version 2.5 · June 2026 · Omar Kamel</p>
+  </div>
+
+  <div class="page">
+
+    <!-- ═══════ TOC ═══════ -->
+    <div class="section">
+      <div class="section-number">Table of Contents · فهرس المحتويات</div>
+      <div style="direction:ltr; text-align:left; font-size:14px; line-height:2.4; color:var(--slate-700)">
+        <div><strong style="color:var(--indigo)">01</strong> &nbsp; System Architecture Overview — معمارية النظام</div>
+        <div><strong style="color:var(--indigo)">02</strong> &nbsp; State Machine — مخطط الحالات</div>
+        <div><strong style="color:var(--indigo)">03</strong> &nbsp; Create Storyboard Flow — تدفق إنشاء المشاهد</div>
+        <div><strong style="color:var(--indigo)">04</strong> &nbsp; Edit Scene Flow — تدفق تعديل المشهد</div>
+        <div><strong style="color:var(--indigo)">05</strong> &nbsp; UI Layout — تخطيط واجهة المستخدم</div>
+        <div><strong style="color:var(--indigo)">06</strong> &nbsp; Data Models — نماذج البيانات</div>
+        <div><strong style="color:var(--indigo)">07</strong> &nbsp; API Reference — مرجع الـ APIs</div>
+        <div><strong style="color:var(--indigo)">08</strong> &nbsp; Timeline Rendering — عرض التايملاين</div>
+        <div><strong style="color:var(--indigo)">09</strong> &nbsp; Vercel Deployment — بنية النشر</div>
+        <div><strong style="color:var(--indigo)">10</strong> &nbsp; Duration Formula — معادلة حساب المدة</div>
+      </div>
+    </div>
+
+    <!-- ═══════ 1. ARCHITECTURE ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 01</div>
+      <h2>System Architecture Overview</h2>
+      <p class="section-desc">معمارية النظام الكاملة — الفرونت إند (React) يتواصل مع الباك إند (Express) اللي بدوره يستدعي خدمات الذكاء الاصطناعي من Gemini</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+graph TB
+    subgraph CLIENT["🖥️ Frontend — React SPA"]
+        direction TB
+        UI["Workspace.tsx\n3-Column Layout"]
+        SM["State Machine\nstoryboardMode / storyboardStatus"]
+        TL["Timeline Engine\nDrag & Resize Scenes"]
+        CV["Canvas Engine\nPen Animation & Reveal"]
+    end
+
+    subgraph SERVER["⚙️ Backend — Express + Vercel"]
+        direction TB
+        API1["/api/pipeline/create\nPOST"]
+        API2["/api/pipeline/edit\nPUT"]
+        API3["/api/generate-storyboard-image\nPOST"]
+        API4["/api/generate-narrator-audio\nPOST"]
+        API5["/api/transcribe\nPOST"]
+    end
+
+    subgraph AI["🤖 Gemini AI Services"]
+        direction TB
+        G1["Gemini 2.5 Flash\nScript → 5 Scenes JSON"]
+        G2["Gemini 2.5\nImage Generation"]
+        G4["Gemini 2.5\nAudio TTS"]
+        G5["Gemini 2.5\nTranscription"]
+    end
+
+    UI -->|fetch| API1
+    UI -->|fetch| API2
+    UI -->|fetch| API3
+    UI -->|fetch| API4
+    
+    API1 -->|Structured JSON| G1
+    API3 --> G2
+    API4 --> G4
+    API5 --> G5
+
+    G1 -->|5 Scenes| API1
+    API1 -->|Response| UI
+
+    SM --> TL
+    SM --> CV
+
+    style CLIENT fill:#eef2ff,stroke:#6366f1,stroke-width:2px
+    style SERVER fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+    style AI fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+        </pre>
+      </div>
+      <div class="diagram-caption-wrapper">
+        <span class="diagram-caption">الشكل 1: معمارية النظام الكاملة — 3 طبقات: العميل ← الخادم ← الذكاء الاصطناعي</span>
+      </div>
+    </div>
+
+    <!-- ═══════ 2. STATE MACHINE ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 02</div>
+      <h2>State Machine — Storyboard States</h2>
+      <p class="section-desc">النظام يعمل بنظام حالات (State Machine) — كل حالة تتحكم بما يظهر على الشاشة وكيف يتفاعل المستخدم</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> EMPTY
+
+    EMPTY --> PROCESSING: Click Create Storyboard
+    PROCESSING --> ACTIVE: Scenes received
+    PROCESSING --> EMPTY: API Error
+    ACTIVE --> EMPTY: Click Reset
+
+    state ACTIVE {
+        IDLE2: IDLE
+        CREATE2: CREATE
+        EDIT2: EDIT
+        
+        [*] --> IDLE2
+        IDLE2 --> CREATE2: handleCreateStoryboard
+        CREATE2 --> IDLE2: Done
+        IDLE2 --> EDIT2: handleEditStoryboard
+        EDIT2 --> IDLE2: Done
+    }
+        </pre>
+      </div>
+      <div class="diagram-caption-wrapper">
+        <span class="diagram-caption">الشكل 2: مخطط الحالات — Status يتحكم بالعرض و Mode يتحكم بقفل التفاعل</span>
+      </div>
+
+      <h3>What Each Status Renders</h3>
+      <div class="state-grid">
+        <div class="state-card state-empty">
+          <h4>🔴 EMPTY</h4>
+          <p>Textarea input<br/>+ Create Storyboard button<br/>+ Welcome overlay on canvas</p>
+        </div>
+        <div class="state-card state-processing">
+          <h4>🟡 PROCESSING</h4>
+          <p>Spinner animation<br/>+ "Generating Storyboard..."<br/>+ Inputs disabled</p>
+        </div>
+        <div class="state-card state-active">
+          <h4>🟢 ACTIVE</h4>
+          <p>Scene list cards<br/>+ Inline edit textarea<br/>+ Full timeline active</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ 3. CREATE FLOW ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 03</div>
+      <h2>Create Storyboard — Sequence Flow</h2>
+      <p class="section-desc">تسلسل عملية إنشاء الـ Storyboard من لحظة كتابة النص وحتى ظهور المشاهد الخمسة على التايملاين</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+sequenceDiagram
+    actor User as 👤 User
+    participant FE as 🖥️ Frontend
+    participant BE as ⚙️ Backend
+    participant AI as 🤖 Gemini AI
+
+    User->>FE: Types script text
+    User->>FE: Clicks "Create Storyboard"
+    
+    activate FE
+    FE->>FE: status → PROCESSING
+    FE->>FE: Show skeleton loader ⏳
+    
+    FE->>BE: POST /api/pipeline/create
+    activate BE
+    
+    BE->>AI: Gemini 2.5 Flash + JSON Schema
+    activate AI
+    AI-->>BE: Array of 5 Scenes
+    deactivate AI
+    
+    alt Success
+        BE-->>FE: { scenes: [5 scenes] }
+    else Failure
+        BE->>BE: Paragraph split fallback
+        BE-->>FE: { scenes: [5 fallback] }
+    end
+    deactivate BE
+    
+    FE->>FE: Map scenes → timeline elements
+    FE->>FE: status → ACTIVE ✅
+    deactivate FE
+        </pre>
+      </div>
+      <div class="diagram-caption-wrapper">
+        <span class="diagram-caption">الشكل 3: تسلسل إنشاء Storyboard — يشمل المسار الناجح والمسار البديل (fallback)</span>
+      </div>
+
+      <div class="info-box info-indigo">
+        <span class="info-box-icon">💡</span>
+        <div>
+          <strong>Gemini JSON Schema:</strong> The API uses <code>responseMimeType: "application/json"</code> with a strict schema forcing exactly <code>scene_number</code>, <code>text</code>, and <code>duration_seconds</code> per scene.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ 4. EDIT FLOW ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 04</div>
+      <h2>Edit Scene — Sequence Flow</h2>
+      <p class="section-desc">تسلسل عملية تعديل مشهد واحد — التعديل يعيد حساب المدة تلقائياً ويعدل التايملاين بالكامل بشكل تسلسلي</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+sequenceDiagram
+    actor User as 👤 User
+    participant FE as 🖥️ Frontend
+    participant BE as ⚙️ Backend
+
+    User->>FE: Select Scene #3
+    FE->>FE: Show inline editor
+    
+    User->>FE: Edit text + click "Edit"
+    
+    activate FE
+    FE->>FE: mode → EDIT
+    FE->>FE: Shimmer overlay ✨
+    
+    FE->>BE: PUT /api/pipeline/edit
+    activate BE
+    BE->>BE: wordCount / 3 → clamp [3,15]
+    BE-->>FE: { scene_id, text, duration_seconds }
+    deactivate BE
+    
+    FE->>FE: Merge scene update
+    FE->>FE: Recalculate all start times
+    FE->>FE: mode → IDLE ✅
+    deactivate FE
+        </pre>
+      </div>
+      <div class="diagram-caption-wrapper">
+        <span class="diagram-caption">الشكل 4: تسلسل التعديل — إعادة حساب المدة + تحديث التايملاين التسلسلي</span>
+      </div>
+    </div>
+
+    <!-- ═══════ 5. UI LAYOUT ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 05</div>
+      <h2>UI Layout — 3-Column Workspace</h2>
+      <p class="section-desc">تخطيط واجهة المستخدم على طريقة Canva — 3 أعمدة مع تايملاين أسفل الشاشة</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+graph LR
+    subgraph L["◀ Left Panel 420px"]
+        direction TB
+        T1["Tab Bar 80px\n📦 Assets\n✨ Script\n⚙️ Adjust"]
+        T2["Drawer 340px\n🎬 Storyboard Creator\n📸 Media Uploads\n🎵 Audio"]
+    end
+
+    subgraph C["◆ Center Canvas"]
+        direction TB
+        C1["Top Toolbar\n🖱️ Select | 🖌️ Brush | 🧹 Eraser"]
+        C2["Canvas\nImage + Animation"]
+        C3["Bottom Toolbar\n▶ Preview | 🔍 Analyze | 🔄 Reset"]
+    end
+
+    subgraph R["▶ Right Panel 320px"]
+        direction TB
+        R1["Layers Panel\n📋 Elements List\n⏱️ FPS Settings\n🔼🔽 Reorder"]
+    end
+
+    style L fill:#eef2ff,stroke:#6366f1,stroke-width:2px
+    style C fill:#f8fafc,stroke:#94a3b8,stroke-width:2px
+    style R fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+        </pre>
+      </div>
+
+      <h3>Bottom Timeline (192px)</h3>
+      <div class="diagram-container">
+        <pre class="mermaid">
+graph TB
+    subgraph TL["Timeline Panel"]
+        direction TB
+        H["Controls: ▶ Play | ⏪ Rewind | Duration"]
+        PB["Proportional Bar: S1 | S2 | S3 | S4 | S5"]
+        RU["Time Ruler: 00:00 → ∞"]
+        SC["Scene Track: Draggable blocks"]
+        VO["Voiceover: Audio waveform"]
+    end
+
+    H --> PB --> RU --> SC --> VO
+
+    style TL fill:#fffbeb,stroke:#f59e0b,stroke-width:2px
+        </pre>
+      </div>
+
+      <h3 style="margin-top:24px">Proportional Duration Bar — Example</h3>
+      <div class="prop-bar">
+        <div style="width:20%; background:#6366f1">S1 — 5s</div>
+        <div style="width:30%; background:#8b5cf6">S2 — 8s</div>
+        <div style="width:15%; background:#0ea5e9">S3 — 4s</div>
+        <div style="width:20%; background:#22c55e">S4 — 5s</div>
+        <div style="width:15%; background:#f59e0b">S5 — 3s</div>
+      </div>
+      <div class="diagram-caption-wrapper">
+        <span class="diagram-caption">الشكل 5: شريط المدة النسبي — كل مشهد يأخذ عرض نسبي حسب مدته</span>
+      </div>
+    </div>
+
+    <!-- ═══════ 6. DATA MODELS ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 06</div>
+      <h2>Data Models</h2>
+      <p class="section-desc">نماذج البيانات الرئيسية في النظام — كل StoryboardScene يتحول لـ ElementSequence على التايملاين</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+classDiagram
+    class StoryboardScene {
+        +String scene_id
+        +Number scene_number
+        +String text
+        +Number duration_seconds
+    }
+
+    class ElementSequence {
+        +String id
+        +Array paths
+        +Array points
+        +Number startTime
+        +Number duration
+        +Bounds bounds
+        +String label
+        +String elementType
+    }
+
+    class Bounds {
+        +Number minX
+        +Number minY
+        +Number maxX
+        +Number maxY
+    }
+
+    StoryboardScene --> ElementSequence : maps 1 to 1
+    ElementSequence --> Bounds : contains
+        </pre>
+      </div>
+      <div class="diagram-caption-wrapper">
+        <span class="diagram-caption">الشكل 6: نموذج البيانات — العلاقة بين Scene و Element و Bounds</span>
+      </div>
+    </div>
+
+    <!-- ═══════ 7. API REFERENCE ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 07</div>
+      <h2>API Endpoints Reference</h2>
+      <p class="section-desc">جدول مرجعي شامل لكل نقاط الـ API المتاحة في النظام</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+graph LR
+    subgraph P["🎬 Pipeline"]
+        A1["POST /api/pipeline/create"]
+        A2["PUT /api/pipeline/edit"]
+    end
+
+    subgraph M["📸 Media"]
+        A3["POST /api/generate-storyboard-image"]
+        A4["POST /api/edit-image"]
+        A5["POST /api/segment-image"]
+    end
+
+    subgraph AU["🎵 Audio"]
+        A6["POST /api/generate-narrator-audio"]
+        A7["POST /api/transcribe"]
+    end
+
+    subgraph I["🔧 Infra"]
+        A8["GET /api/network-info"]
+        A9["POST /api/start-tunnel"]
+    end
+
+    style P fill:#eef2ff,stroke:#6366f1,stroke-width:2px
+    style M fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+    style AU fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+    style I fill:#fef2f2,stroke:#ef4444,stroke-width:2px
+        </pre>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Method</th>
+            <th>Input</th>
+            <th>Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/api/pipeline/create</code></td>
+            <td>POST</td>
+            <td><code>{ script: string }</code></td>
+            <td><code>{ scenes: Scene[] }</code></td>
+          </tr>
+          <tr>
+            <td><code>/api/pipeline/edit</code></td>
+            <td>PUT</td>
+            <td><code>{ scene_id, text }</code></td>
+            <td><code>{ success, scene }</code></td>
+          </tr>
+          <tr>
+            <td><code>/api/generate-storyboard-image</code></td>
+            <td>POST</td>
+            <td><code>{ text, style, bgColor }</code></td>
+            <td><code>{ imageUrl, steps[] }</code></td>
+          </tr>
+          <tr>
+            <td><code>/api/edit-image</code></td>
+            <td>POST</td>
+            <td><code>{ image, prompt }</code></td>
+            <td><code>{ imageUrl }</code></td>
+          </tr>
+          <tr>
+            <td><code>/api/generate-narrator-audio</code></td>
+            <td>POST</td>
+            <td><code>{ script, voiceName }</code></td>
+            <td><code>{ audioUrl, transcription[] }</code></td>
+          </tr>
+          <tr>
+            <td><code>/api/transcribe</code></td>
+            <td>POST</td>
+            <td><code>FormData { audio }</code></td>
+            <td><code>{ transcription: Word[] }</code></td>
+          </tr>
+          <tr>
+            <td><code>/api/segment-image</code></td>
+            <td>POST</td>
+            <td><code>FormData { image }</code></td>
+            <td><code>{ segments[] }</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════ 8. TIMELINE RENDERING ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 08</div>
+      <h2>Timeline — Conditional Rendering Logic</h2>
+      <p class="section-desc">شجرة القرارات للتايملاين — كل حالة تعرض واجهة مختلفة حسب الـ status والـ mode</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+flowchart TD
+    A{"storyboardStatus?"} -->|EMPTY| B["🔇 Awaiting Script\nCentered placeholder\nAudioLines icon"]
+    A -->|PROCESSING or ACTIVE| C["Full Timeline Tracks"]
+    
+    C --> D{"status === ACTIVE\nand scenes > 0?"}
+    D -->|Yes| E["🟦🟪🟦🟩🟨\nProportional Bar\nS1 | S2 | S3 | S4 | S5"]
+    D -->|No| F["Time Ruler"]
+    E --> F
+    F --> G["Scene Track\nDraggable blocks"]
+    G --> H["Voiceover Waveform"]
+    
+    C --> I{"mode === EDIT?"}
+    I -->|Yes| J["✨ Shimmer Overlay\nGradient animation\npointer-events: none"]
+    I -->|No| K["Normal interaction"]
+
+    style B fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px
+    style E fill:#eef2ff,stroke:#6366f1,stroke-width:2px
+    style J fill:#e0e7ff,stroke:#818cf8,stroke-width:2px,stroke-dasharray:5
+        </pre>
+      </div>
+      <div class="diagram-caption-wrapper">
+        <span class="diagram-caption">الشكل 8: منطق العرض الشرطي للتايملاين — EMPTY / ACTIVE / EDIT كل حالة بعرض مختلف</span>
+      </div>
+    </div>
+
+    <!-- ═══════ 9. VERCEL ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 09</div>
+      <h2>Vercel Deployment Architecture</h2>
+      <p class="section-desc">معمارية النشر على Vercel — طلبات الـ API تروح لـ Serverless Function والباقي للـ Static SPA</p>
+
+      <div class="diagram-container">
+        <pre class="mermaid">
+graph TB
+    BROWSER["🌐 Browser"] --> ROUTER["Vercel Router\nvercel.json"]
+    
+    ROUTER -->|"/api/*"| SF["Serverless Function\nserver.ts → export default app"]
+    ROUTER -->|"/*"| STATIC["Static Build\ndist/ → React SPA"]
+    
+    SF --> TIMEOUT["⏱️ 8s Timeout Guard\nPromise.race()"]
+    TIMEOUT -->|Under 8s| OK["✅ JSON Response"]
+    TIMEOUT -->|Over 8s| FAIL["⚠️ Graceful Fallback"]
+    
+    style SF fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+    style STATIC fill:#eef2ff,stroke:#6366f1,stroke-width:2px
+    style TIMEOUT fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+        </pre>
+      </div>
+      <div class="diagram-caption-wrapper">
+        <span class="diagram-caption">الشكل 9: Vercel Routing — فصل API عن Static مع حماية Timeout 8 ثانية</span>
+      </div>
+
+      <div class="info-box info-amber">
+        <span class="info-box-icon">⚠️</span>
+        <div>
+          <strong>Hobby Tier Limit:</strong> Vercel hobby tier has a 10-second execution limit. The system uses <code>Promise.race()</code> with an 8-second timeout to ensure graceful fallback before hitting the hard limit.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ 10. DURATION FORMULA ═══════ -->
+    <div class="section page-break">
+      <div class="section-number">Section 10</div>
+      <h2>Duration Calculation Formula</h2>
+      <p class="section-desc">المعادلة المستخدمة لحساب مدة كل مشهد بناءً على عدد الكلمات في النص</p>
+
+      <div class="code-block">
+<span class="comment">// Duration formula used in /api/pipeline/edit</span>
+<span class="keyword">const</span> wordCount = text.split(<span class="string">/\s+/</span>).length;
+<span class="keyword">const</span> duration = Math.max(<span class="number">3</span>, Math.min(<span class="number">15</span>, Math.ceil(wordCount / <span class="number">3</span>)));
+
+<span class="comment">// Rule: ~1 second per 3 words, clamped between 3s and 15s</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Input Text</th>
+            <th>Word Count</th>
+            <th>Raw Calc</th>
+            <th>Final Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>"Hello world"</td><td>2</td><td>ceil(0.67) = 1</td><td><strong>3s</strong> (min clamp)</td></tr>
+          <tr><td>"The quick brown fox jumps"</td><td>5</td><td>ceil(1.67) = 2</td><td><strong>3s</strong> (min clamp)</td></tr>
+          <tr><td>~15 word paragraph</td><td>15</td><td>ceil(5) = 5</td><td><strong>5s</strong></td></tr>
+          <tr><td>~30 word paragraph</td><td>30</td><td>ceil(10) = 10</td><td><strong>10s</strong></td></tr>
+          <tr><td>~60 word paragraph</td><td>60</td><td>ceil(20) = 20</td><td><strong>15s</strong> (max clamp)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════ KEY FILES ═══════ -->
+    <div class="section">
+      <div class="section-number">Key Files · الملفات الرئيسية</div>
+      <div class="file-list">
+        <div class="file-card">
+          <div class="file-name">📄 server.ts</div>
+          <div class="file-desc">Express backend · All API routes · Gemini integration · Vercel serverless entry point</div>
+        </div>
+        <div class="file-card">
+          <div class="file-name">📄 Workspace.tsx</div>
+          <div class="file-desc">Main React component · 3-column layout · State machine · Canvas engine · Timeline</div>
+        </div>
+        <div class="file-card">
+          <div class="file-name">📄 vercel.json</div>
+          <div class="file-desc">Vercel deployment routing · Build config · API → serverless, static → dist</div>
+        </div>
+        <div class="file-card">
+          <div class="file-name">📄 edgeDetection.ts</div>
+          <div class="file-desc">Client-side image processing · Edge detection · Path extraction for pen animation</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <p>Pen-Reveal Studio v2.5 · Built with ❤️ by Omar Kamel · June 2026</p>
+      <p style="margin-top:4px">React · Express · Gemini 2.5 AI · Vercel Serverless</p>
+    </div>
+
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#eef2ff',
+        primaryTextColor: '#1e293b',
+        primaryBorderColor: '#6366f1',
+        lineColor: '#94a3b8',
+        secondaryColor: '#f0fdf4',
+        tertiaryColor: '#fef3c7',
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '13px',
+      },
+      sequence: {
+        actorMargin: 60,
+        messageMargin: 40,
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+      }
+    });
+  </script>
+</body>
+</html>

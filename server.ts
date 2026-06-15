@@ -29,10 +29,11 @@ interface Word {
 }
 
 interface StoryboardScene {
-  scene_id?: string;
+  scene_id: string;
   scene_number: number;
   text: string;
   duration_seconds: number;
+  keywords: string[];
 }
 
 const app = express();
@@ -1566,11 +1567,12 @@ Logic Guidelines:
         1. A sequential "scene_number" (integer 1 to 5).
         2. The visual/script "text" chunk for that scene.
         3. An estimated "duration_seconds" (an integer, e.g. 5, 8, 10) depending on the amount of script text (approx 1 second per 3 words, min 3 seconds, max 15 seconds).
+        4. "keywords": exactly 2-3 short descriptive English visual nouns capturing the scene's key imagery (e.g. ["rocket", "launch"], ["whiteboard", "drawing"]).
 
         Script to parse:
         "${script}"
 
-        Return a strict JSON array of 5 objects containing "scene_number", "text", and "duration_seconds".
+        Return a strict JSON array of 5 objects containing "scene_number", "text", "duration_seconds", and "keywords".
         Do not include any conversational text or markdown blocks, only the raw JSON.
       `;
 
@@ -1588,9 +1590,10 @@ Logic Guidelines:
                 properties: {
                   scene_number: { type: Type.INTEGER },
                   text: { type: Type.STRING },
-                  duration_seconds: { type: Type.INTEGER }
+                  duration_seconds: { type: Type.INTEGER },
+                  keywords: { type: Type.ARRAY, items: { type: Type.STRING } }
                 },
-                required: ["scene_number", "text", "duration_seconds"]
+                required: ["scene_number", "text", "duration_seconds", "keywords"]
               }
             }
           }
@@ -1610,12 +1613,15 @@ Logic Guidelines:
         while (paragraphs.length < 5) {
           paragraphs.push(`Continuing narrative... Scene ${paragraphs.length + 1}`);
         }
-        scenes = paragraphs.map((text, i): StoryboardScene => {
+        scenes = paragraphs.map((text: string, i: number): StoryboardScene => {
           const wordCount = text.split(/\s+/).length;
+          const kw = text.split(/\s+/).filter(w => w.length > 3).slice(0, 2);
           return {
+            scene_id: "",
             scene_number: i + 1,
             text,
-            duration_seconds: Math.max(3, Math.min(15, Math.ceil(wordCount / 3)))
+            duration_seconds: Math.max(3, Math.min(15, Math.ceil(wordCount / 3))),
+            keywords: kw.length > 0 ? kw : ["scene", `part${i + 1}`]
           };
         });
       }
@@ -1625,7 +1631,8 @@ Logic Guidelines:
         scene_id: `scene-${Date.now()}-${idx}-${Math.floor(Math.random() * 1000)}`,
         scene_number: s.scene_number || (idx + 1),
         text: s.text || "",
-        duration_seconds: s.duration_seconds || 5
+        duration_seconds: s.duration_seconds || 5,
+        keywords: s.keywords || []
       }));
 
       res.json({ scenes: formattedScenes });

@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   UploadCloud, 
   Play, 
+  Pause,
   Download, 
   Settings, 
   Image as ImageIcon, 
@@ -513,6 +514,139 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
   const [elements, setElements] = useState<ElementSequence[]>([]);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+
+  const currentTotalTime = elements.length ? elements[elements.length - 1].startTime + elements[elements.length - 1].duration : 0;
+
+  // Scene isolation: track which element is active at currentTime
+  const activeElement = useMemo(() => {
+    if (elements.length === 0) return null;
+    const found = elements.find(el => currentTime >= el.startTime && currentTime < el.startTime + el.duration);
+    return found ?? (currentTime > 0 && elements.length > 0 ? elements[elements.length - 1] : null);
+  }, [currentTime, elements]);
+
+  const activeElementIndex = useMemo(() => {
+    if (!activeElement) return -1;
+    return elements.findIndex(el => el.id === activeElement.id);
+  }, [activeElement, elements]);
+
+  // Synchronize audio element state and ticks
+  useEffect(() => {
+    if (!audioUrl) {
+      audioRef.current = null;
+      return;
+    }
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+
+    const handleTimeUpdate = () => {
+      if (!audio.paused) {
+        setCurrentTime(audio.currentTime);
+      }
+    };
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('ended', handleEnded);
+
+    audio.currentTime = currentTime;
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('ended', handleEnded);
+      audioRef.current = null;
+    };
+  }, [audioUrl]);
+
+  // Singular requestAnimationFrame ticker for smooth timing updates
+  useEffect(() => {
+    let animationFrameId: number;
+    let lastTime = performance.now();
+
+    const tick = () => {
+      if (!isPlaying) return;
+
+      if (audioUrl && audioRef.current) {
+        setCurrentTime(audioRef.current.currentTime);
+        if (audioRef.current.ended) {
+          setIsPlaying(false);
+          setCurrentTime(0);
+          return;
+        }
+      } else {
+        const now = performance.now();
+        const delta = (now - lastTime) / 1000;
+        lastTime = now;
+
+        setCurrentTime(prevTime => {
+          const nextTime = prevTime + delta;
+          if (nextTime >= currentTotalTime) {
+            setIsPlaying(false);
+            return 0;
+          }
+          return nextTime;
+        });
+      }
+
+      animationFrameId = requestAnimationFrame(tick);
+    };
+
+    if (isPlaying) {
+      lastTime = performance.now();
+      animationFrameId = requestAnimationFrame(tick);
+      if (audioUrl && audioRef.current) {
+        if (audioRef.current.paused) {
+          audioRef.current.play().catch(e => console.warn("Audio play failed:", e));
+        }
+      }
+    } else {
+      if (audioUrl && audioRef.current) {
+        if (!audioRef.current.paused) {
+          audioRef.current.pause();
+        }
+      }
+    }
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isPlaying, audioUrl, currentTotalTime]);
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+    } else {
+      if (currentTime >= currentTotalTime) {
+        setCurrentTime(0);
+        if (audioUrl && audioRef.current) {
+          audioRef.current.currentTime = 0;
+        }
+      }
+      setIsPlaying(true);
+    }
+  };
+
+  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left - 80;
+    if (clickX >= 0) {
+      const targetTime = clickX / 30;
+      const newTime = Math.max(0, Math.min(currentTotalTime, targetTime));
+      setCurrentTime(newTime);
+      if (audioRef.current) {
+        audioRef.current.currentTime = newTime;
+      }
+    }
+  };
 
   interface DragState {
     id: string;
@@ -569,7 +703,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
   const [fps, setFps] = useState(30);
   const [defaultPenSpeed, setDefaultPenSpeed] = useState(50); // 1-100
   const [colorMode, setColorMode] = useState<'paint' | 'outline'>('outline');
-  const [canvasBgColor, setCanvasBgColor] = useState('#050505');
+  const [canvasBgColor, setCanvasBgColor] = useState('#ffffff');
   const [drawDirection, setDrawDirection] = useState<'default' | 'ltr' | 'rtl' | 'ttb' | 'btt'>('default');
   const [activeLeftTab, setActiveLeftTab] = useState<'assets' | 'script' | 'adjust' | null>('assets');
 
@@ -1359,21 +1493,97 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     if (isStoryboardImg) {
       setProgress({ text: isRtl ? 'جاري تقسيم لوحة القصة لـ 5 مجموعات...' : 'Dividing storyboard into 5 chronological panels...', percentage: 40 });
       
-      const sortedComponents = [...extraction.components].sort((a, b) => {
-        const ay = (a.bounds.minY + a.bounds.maxY) / 2;
-        const by = (b.bounds.minY + b.bounds.maxY) / 2;
-        const ax = (a.bounds.minX + a.bounds.maxX) / 2;
-        const bx = (b.bounds.minX + b.bounds.maxX) / 2;
-        if (Math.abs(ay - by) > canvas.height * 0.15) {
-          return ay - by; // Top developments before bottom rows
-        }
-        return isRtl ? bx - ax : ax - bx; // Reading direction
+      const allPaths: Point[][] = [];
+      extraction.components.forEach(c => {
+        allPaths.push(...c.paths);
       });
 
-      const buckets: typeof extraction.components[] = Array.from({ length: 5 }, () => []);
-      sortedComponents.forEach((c, idx) => {
-         const bucketIdx = Math.min(4, Math.floor((idx / Math.max(1, sortedComponents.length)) * 5));
-         buckets[bucketIdx].push(c);
+      const buckets: Point[][][] = Array.from({ length: 5 }, () => []);
+      const boundsList = Array.from({ length: 5 }, () => ({
+        minX: 99999,
+        minY: 99999,
+        maxX: -99999,
+        maxY: -99999
+      }));
+
+      const isHorizontal = canvas.width / canvas.height > 1.5;
+
+      const classifyPanel = (cx: number, cy: number, cw: number, ch: number, isHorizontal: boolean): number => {
+        const nx = cx / cw;
+        const ny = cy / ch;
+        if (isHorizontal) {
+          let idx = Math.floor(nx * 5);
+          if (idx < 0) idx = 0;
+          if (idx > 4) idx = 4;
+          return idx;
+        } else {
+          if (ny < 0.38) {
+            return nx < 0.5 ? 0 : 1;
+          } else if (ny < 0.68) {
+            return nx < 0.5 ? 2 : 3;
+          } else {
+            return 4;
+          }
+        }
+      };
+
+      allPaths.forEach(path => {
+        if (path.length === 0) return;
+        
+        let pMinX = 99999, pMinY = 99999, pMaxX = -99999, pMaxY = -99999;
+        let sumX = 0, sumY = 0;
+        path.forEach(pt => {
+          if (pt.x < pMinX) pMinX = pt.x;
+          if (pt.x > pMaxX) pMaxX = pt.x;
+          if (pt.y < pMinY) pMinY = pt.y;
+          if (pt.y > pMaxY) pMaxY = pt.y;
+          sumX += pt.x;
+          sumY += pt.y;
+        });
+
+        const pWidth = pMaxX - pMinX;
+        const pHeight = pMaxY - pMinY;
+
+        // Exclude global borders/divider lines from being drawn during scene animation
+        if (pWidth > canvas.width * 0.75 || pHeight > canvas.height * 0.75) {
+          return;
+        }
+
+        const cx = sumX / path.length;
+        const cy = sumY / path.length;
+        const panelIdx = classifyPanel(cx, cy, canvas.width, canvas.height, isHorizontal);
+        
+        buckets[panelIdx].push(path);
+
+        const b = boundsList[panelIdx];
+        if (pMinX < b.minX) b.minX = pMinX;
+        if (pMinY < b.minY) b.minY = pMinY;
+        if (pMaxX > b.maxX) b.maxX = pMaxX;
+        if (pMaxY > b.maxY) b.maxY = pMaxY;
+      });
+
+      // Fill in default safety bounds for empty/low-path panels
+      boundsList.forEach((b, sIdx) => {
+        if (b.minX === 99999) {
+          if (isHorizontal) {
+            b.minX = (sIdx * 0.2) * canvas.width;
+            b.maxX = ((sIdx + 1) * 0.2) * canvas.width;
+            b.minY = 0;
+            b.maxY = canvas.height;
+          } else {
+            if (sIdx === 0) {
+              b.minX = 0; b.maxX = canvas.width * 0.5; b.minY = 0; b.maxY = canvas.height * 0.38;
+            } else if (sIdx === 1) {
+              b.minX = canvas.width * 0.5; b.maxX = canvas.width; b.minY = 0; b.maxY = canvas.height * 0.38;
+            } else if (sIdx === 2) {
+              b.minX = 0; b.maxX = canvas.width * 0.5; b.minY = canvas.height * 0.38; b.maxY = canvas.height * 0.68;
+            } else if (sIdx === 3) {
+              b.minX = canvas.width * 0.5; b.maxX = canvas.width; b.minY = canvas.height * 0.38; b.maxY = canvas.height * 0.68;
+            } else {
+              b.minX = 0; b.maxX = canvas.width; b.minY = canvas.height * 0.68; b.maxY = canvas.height;
+            }
+          }
+        }
       });
 
       const totalWords = transcription.length;
@@ -1390,27 +1600,10 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
         isRtl ? "المشهد ٥: النهاية" : "Panel 5: Ending"
       ];
 
-      newElements = buckets.map((bucket, sIdx) => {
-         const allPaths: Point[][] = [];
-         let minX = 99999, minY = 99999, maxX = -99999, maxY = -99999;
-         bucket.forEach(c => {
-            allPaths.push(...c.paths);
-            if (c.bounds.minX < minX) minX = c.bounds.minX;
-            if (c.bounds.minY < minY) minY = c.bounds.minY;
-            if (c.bounds.maxX > maxX) maxX = c.bounds.maxX;
-            if (c.bounds.maxY > maxY) maxY = c.bounds.maxY;
-         });
-
-         // Default safety box if bucket is completely empty
-         if (minX === 99999) {
-            minX = (sIdx * 20) * canvas.width / 100;
-            maxX = ((sIdx + 1) * 20) * canvas.width / 100;
-            minY = 0;
-            maxY = canvas.height;
-         }
-
+      newElements = buckets.map((bucketPaths, sIdx) => {
+         const b = boundsList[sIdx];
          const direction = isRtl ? 'rtl' : 'ltr';
-         const points = flattenPaths(allPaths, direction);
+         const points = flattenPaths(bucketPaths, direction);
 
          // Perfectly partition active speech timing from narration
          let startTime = sIdx * 3.0;
@@ -1430,12 +1623,12 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
          }
 
          return {
-            id: `storyboard-panel-${sIdx}-${Date.now()}`,
-            paths: allPaths,
+            id: (scenes[sIdx] && scenes[sIdx].scene_id) ? scenes[sIdx].scene_id : `storyboard-panel-${sIdx}-${Date.now()}`,
+            paths: bucketPaths,
             points,
             startTime: Number(startTime.toFixed(1)),
             duration: Number(elementDuration.toFixed(1)),
-            bounds: { minX, minY, maxX, maxY },
+            bounds: { minX: b.minX, minY: b.minY, maxX: b.maxX, maxY: b.maxY },
             label: stepLabels[sIdx],
             elementType: 'visual' as 'written' | 'visual',
             writingDirection: isRtl ? 'rtl' : 'ltr' as any,
@@ -1635,22 +1828,21 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     }
 
     // Automatically start after processing if just clicking preview
-    setTimeout(() => startAnimation(false, newElements), 150);
+    setTimeout(() => startAnimation(false), 150);
   };
 
-  const startAnimation = (recordMedia = false, overrideElements?: ElementSequence[]) => {
-    const activeElements = overrideElements || elements;
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    if (!activeElements.length || !canvasRef.current || !mainImgRef.current) return;
-
-    setIsAnimating(true);
+  const drawCanvas = (time: number) => {
     const canvas = canvasRef.current;
+    const img = mainImgRef.current;
+    if (!canvas || !img) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    const img = mainImgRef.current;
     const cw = canvas.width;
     const ch = canvas.height;
+
+    const isStoryboardActive = storyboardStatus === 'ACTIVE' && scenes.length > 0;
+    const isDrawingDone = time >= currentTotalTime;
 
     // Paint Mask Canvas
     const paintMaskCanvas = document.createElement('canvas');
@@ -1678,6 +1870,372 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     revealCanvas.height = ch;
     const revealCtx = revealCanvas.getContext('2d')!;
 
+    let activePenPoint: { x: number; y: number } | null = null;
+
+    if (isStoryboardActive) {
+      let cumulativeTime = 0;
+      const scenesWithTime = scenes.map((s) => {
+        const startTime = cumulativeTime;
+        const endTime = cumulativeTime + s.duration_seconds;
+        cumulativeTime = endTime;
+        return {
+          ...s,
+          startTime,
+          endTime,
+        };
+      });
+
+      const activeScene = scenesWithTime.find(s => time >= s.startTime && time <= s.endTime) || scenesWithTime[scenesWithTime.length - 1];
+      
+      if (activeScene) {
+        for (const el of elements) {
+          const isPaintMode = el.elementType === 'visual' || colorMode === 'paint';
+          const targetMaskCtx = isPaintMode ? paintMaskCtx : outlineMaskCtx;
+
+          // Set brush width and shadow
+          let brushWidth = Math.max(1, cw / 500);
+          if (el.elementType === 'visual') {
+            brushWidth = Math.max(45, cw / 22);
+            targetMaskCtx.shadowBlur = glowSize * 2;
+          } else {
+            brushWidth = colorMode === 'paint' ? Math.max(28, cw / 35) : Math.max(6.5, cw / 140);
+            targetMaskCtx.shadowBlur = glowSize;
+          }
+          targetMaskCtx.lineWidth = brushWidth;
+
+          const pointsCount = el.points?.length || 0;
+          if (pointsCount === 0) continue;
+
+          // Check if this element is in a past scene, current active scene, or future scene
+          const isPastElement = el.startTime < activeScene.startTime;
+          const isFutureElement = el.startTime >= activeScene.endTime;
+          const isActiveElement = !isPastElement && !isFutureElement;
+
+          if (isPastElement || isDrawingDone) {
+            // Draw fully
+            targetMaskCtx.beginPath();
+            const startPt = el.points[0];
+            targetMaskCtx.moveTo(startPt.x, startPt.y);
+            for (let i = 1; i < pointsCount; i++) {
+              const pt = el.points[i];
+              if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
+              else targetMaskCtx.lineTo(pt.x, pt.y);
+            }
+            targetMaskCtx.stroke();
+          } else if (isActiveElement) {
+            // Compute total stroke points inside this scene
+            const activeSceneElements = elements.filter(e => {
+              return e.id === activeScene.scene_id || 
+                     (e.startTime >= activeScene.startTime && e.startTime < activeScene.endTime);
+            });
+            const totalStrokePoints = activeSceneElements.reduce((acc: number, e: ElementSequence) => acc + (e.points?.length || 1), 0);
+            const sceneAudioDuration = activeScene.endTime - activeScene.startTime;
+            const automatedPenSpeed = sceneAudioDuration > 0 ? totalStrokePoints / sceneAudioDuration : 0;
+            const elapsedSceneTime = time - activeScene.startTime;
+            const pointsToDraw = elapsedSceneTime * automatedPenSpeed;
+
+            // Sequential draw across elements within the active scene
+            let pointsBeforeThisEl = 0;
+            for (const activeEl of activeSceneElements) {
+              if (activeEl.id === el.id) break;
+              pointsBeforeThisEl += activeEl.points?.length || 0;
+            }
+
+            const remainingPointsForThisEl = pointsToDraw - pointsBeforeThisEl;
+
+            if (remainingPointsForThisEl <= 0) {
+              continue;
+            }
+
+            if (remainingPointsForThisEl >= pointsCount) {
+              targetMaskCtx.beginPath();
+              const startPt = el.points[0];
+              targetMaskCtx.moveTo(startPt.x, startPt.y);
+              for (let i = 1; i < pointsCount; i++) {
+                const pt = el.points[i];
+                if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
+                else targetMaskCtx.lineTo(pt.x, pt.y);
+              }
+              targetMaskCtx.stroke();
+            } else {
+              const targetIndex = Math.min(pointsCount, Math.floor(remainingPointsForThisEl));
+              const brushRadius = brushWidth / 2;
+              let lagCount = Math.ceil(brushRadius + (el.elementType === 'visual' ? 5 : 12));
+              if (lagCount > pointsCount * 0.45) {
+                lagCount = Math.floor(pointsCount * 0.45);
+              }
+              const maskTargetIndex = Math.max(0, targetIndex - lagCount);
+
+              if (maskTargetIndex > 0) {
+                targetMaskCtx.beginPath();
+                const startPt = el.points[0];
+                targetMaskCtx.moveTo(startPt.x, startPt.y);
+                for (let i = 1; i < maskTargetIndex; i++) {
+                  const pt = el.points[i];
+                  if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
+                  else targetMaskCtx.lineTo(pt.x, pt.y);
+                }
+                targetMaskCtx.stroke();
+              }
+
+              if (targetIndex > 0 && el.points[targetIndex - 1]) {
+                activePenPoint = el.points[targetIndex - 1];
+              }
+            }
+          }
+        }
+      }
+    } else {
+      // Non-storyboard mode: draw elements sequentially based on their individual timings
+      for (const el of elements) {
+        const isPaintMode = el.elementType === 'visual' || colorMode === 'paint';
+        const targetMaskCtx = isPaintMode ? paintMaskCtx : outlineMaskCtx;
+
+        let brushWidth = Math.max(1, cw / 500);
+        if (el.elementType === 'visual') {
+          brushWidth = Math.max(45, cw / 22);
+          targetMaskCtx.shadowBlur = glowSize * 2;
+        } else {
+          brushWidth = colorMode === 'paint' ? Math.max(28, cw / 35) : Math.max(6.5, cw / 140);
+          targetMaskCtx.shadowBlur = glowSize;
+        }
+        targetMaskCtx.lineWidth = brushWidth;
+
+        if (time < el.startTime) {
+          continue;
+        }
+
+        const pointsCount = el.points?.length || 0;
+        if (pointsCount === 0) continue;
+
+        if (time >= el.startTime + el.duration) {
+          targetMaskCtx.beginPath();
+          const startPt = el.points[0];
+          targetMaskCtx.moveTo(startPt.x, startPt.y);
+          for (let i = 1; i < pointsCount; i++) {
+            const pt = el.points[i];
+            if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
+            else targetMaskCtx.lineTo(pt.x, pt.y);
+          }
+          targetMaskCtx.stroke();
+        } else {
+          const progressRatio = (time - el.startTime) / el.duration;
+          const targetIndex = Math.min(pointsCount, Math.floor(progressRatio * pointsCount));
+          const brushRadius = brushWidth / 2;
+          let lagCount = Math.ceil(brushRadius + (el.elementType === 'visual' ? 5 : 12));
+          if (lagCount > pointsCount * 0.45) {
+            lagCount = Math.floor(pointsCount * 0.45);
+          }
+          const maskTargetIndex = Math.max(0, targetIndex - lagCount);
+
+          if (maskTargetIndex > 0) {
+            targetMaskCtx.beginPath();
+            const startPt = el.points[0];
+            targetMaskCtx.moveTo(startPt.x, startPt.y);
+            for (let i = 1; i < maskTargetIndex; i++) {
+              const pt = el.points[i];
+              if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
+              else targetMaskCtx.lineTo(pt.x, pt.y);
+            }
+            targetMaskCtx.stroke();
+          }
+
+          if (targetIndex > 0 && el.points[targetIndex - 1]) {
+            activePenPoint = el.points[targetIndex - 1];
+          }
+        }
+      }
+    }
+
+    revealCtx.clearRect(0, 0, cw, ch);
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = cw;
+    tempCanvas.height = ch;
+    const tempCtx = tempCanvas.getContext('2d')!;
+    tempCtx.drawImage(paintMaskCanvas, 0, 0);
+    tempCtx.globalCompositeOperation = 'source-in';
+    tempCtx.drawImage(img, 0, 0, cw, ch);
+
+    revealCtx.drawImage(tempCanvas, 0, 0);
+    revealCtx.drawImage(outlineMaskCanvas, 0, 0);
+
+    let sX = 0, sY = 0, sW = cw, sH = ch;
+    let minX = 0, minY = 0, w = cw, h = ch;
+    // isDrawingDone is already declared at the top of drawCanvas
+    const shouldZoom = isStoryboardActive && !isSelectionMode && !isDrawingDone;
+    
+    if (shouldZoom) {
+      let cumulativeTime = 0;
+      const scenesWithTime = scenes.map((s) => {
+        const startTime = cumulativeTime;
+        const endTime = cumulativeTime + s.duration_seconds;
+        cumulativeTime = endTime;
+        return {
+          ...s,
+          startTime,
+          endTime,
+        };
+      });
+
+      const activeScene = scenesWithTime.find(s => time >= s.startTime && time <= s.endTime) || scenesWithTime[scenesWithTime.length - 1];
+      
+      if (activeScene) {
+        let tempMinX = 99999, tempMinY = 99999, tempMaxX = -99999, tempMaxY = -99999;
+        const activeSceneElements = elements.filter(el => {
+          return el.id === activeScene.scene_id || 
+                 (el.startTime >= activeScene.startTime && el.startTime < activeScene.endTime);
+        });
+        activeSceneElements.forEach(el => {
+          if (el.bounds) {
+            if (el.bounds.minX < tempMinX) tempMinX = el.bounds.minX;
+            if (el.bounds.minY < tempMinY) tempMinY = el.bounds.minY;
+            if (el.bounds.maxX > tempMaxX) tempMaxX = el.bounds.maxX;
+            if (el.bounds.maxY > tempMaxY) tempMaxY = el.bounds.maxY;
+          }
+        });
+
+        if (tempMinX !== 99999 && tempMaxX > tempMinX && tempMaxY > tempMinY) {
+          minX = tempMinX;
+          minY = tempMinY;
+          let tempW = tempMaxX - tempMinX;
+          let tempH = tempMaxY - tempMinY;
+
+          // Limit minimum viewport size to 25% of canvas dimensions to avoid extreme zoom
+          const minW = cw * 0.25;
+          const minH = ch * 0.25;
+          if (tempW < minW) {
+            const centerX = (tempMinX + tempMaxX) / 2;
+            minX = Math.max(0, centerX - minW / 2);
+            const maxX = Math.min(cw, centerX + minW / 2);
+            tempW = maxX - minX;
+          }
+          if (tempH < minH) {
+            const centerY = (tempMinY + tempMaxY) / 2;
+            minY = Math.max(0, centerY - minH / 2);
+            const maxY = Math.min(ch, centerY + minH / 2);
+            tempH = maxY - minY;
+          }
+          w = tempW;
+          h = tempH;
+
+          const paddingX = w * 0.1;
+          const paddingY = h * 0.1;
+          sX = Math.max(0, minX - paddingX);
+          sY = Math.max(0, minY - paddingY);
+          sW = Math.min(cw - sX, w + paddingX * 2);
+          sH = Math.min(ch - sY, h + paddingY * 2);
+        }
+      }
+    }
+
+    const scaleX = cw / sW;
+    const scaleY = ch / sH;
+    const scale = Math.min(scaleX, scaleY);
+    const offsetX = (cw - sW * scale) / 2;
+    const offsetY = (ch - sH * scale) / 2;
+
+    ctx.fillStyle = canvasBgColor;
+    if (canvasBgColor === 'transparent') {
+      ctx.clearRect(0, 0, cw, ch);
+    } else {
+      ctx.fillRect(0, 0, cw, ch);
+    }
+
+    ctx.save();
+    // Zoom/crop to active panel camera view
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(scale, scale);
+    ctx.translate(-sX, -sY);
+
+    if (shouldZoom) {
+      const clipMargin = 5;
+      ctx.beginPath();
+      ctx.rect(minX - clipMargin, minY - clipMargin, w + clipMargin * 2, h + clipMargin * 2);
+      ctx.clip();
+    }
+
+    ctx.globalAlpha = baseOpacity / 100;
+    ctx.drawImage(img, 0, 0, cw, ch);
+
+    ctx.globalAlpha = 1.0;
+    ctx.drawImage(revealCanvas, 0, 0);
+
+    if (hoveredElementId) {
+      const el = elements.find(e => e.id === hoveredElementId);
+      if (el) {
+        ctx.beginPath();
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = Math.max(2, cw / 400);
+        for (const path of el.paths) {
+          if (!path.length) continue;
+          ctx.moveTo(path[0].x, path[0].y);
+          for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
+        }
+        ctx.stroke();
+        
+        if (colorMode === 'paint') {
+           ctx.shadowBlur = 15;
+           ctx.shadowColor = 'white';
+           ctx.stroke();
+           ctx.shadowBlur = 0;
+        }
+      }
+    }
+
+    if (activePenPoint && penImgRef.current) {
+      const penSizeW = Math.max(80, (cw * penScale) / 100) / scale;
+      const penRatio = penImgRef.current.height / penImgRef.current.width;
+      const penSizeH = penSizeW * penRatio;
+      const px = activePenPoint.x - (penSizeW * (penOffsetX / 100));
+      const py = activePenPoint.y - (penSizeH * (penOffsetY / 100));
+      ctx.drawImage(penImgRef.current, px, py, penSizeW, penSizeH);
+    }
+    ctx.restore();
+
+    // Fade in full color image at the end of the timeline
+    if (isDrawingDone) {
+      const fadeTime = time - currentTotalTime;
+      const fadeAlpha = Math.max(0, Math.min(1, fadeTime / 2.0)); // 2s fade duration
+      ctx.save();
+      ctx.globalAlpha = fadeAlpha;
+      ctx.drawImage(img, 0, 0, cw, ch);
+      ctx.restore();
+    }
+  };
+
+  // Reactive canvas drawing effect
+  useEffect(() => {
+    drawCanvas(currentTime);
+  }, [
+    currentTime, 
+    elements, 
+    scenes, 
+    canvasBgColor, 
+    colorMode, 
+    baseOpacity, 
+    glowSize, 
+    penScale, 
+    penOffsetX, 
+    penOffsetY, 
+    hoveredElementId,
+    selectedElementId,
+    storyboardStatus
+  ]);
+
+  const startAnimation = (recordMedia = false) => {
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+
+    if (!recordMedia) {
+      setCurrentTime(0);
+      setIsPlaying(true);
+      return;
+    }
+
+    if (!canvasRef.current || !mainImgRef.current) return;
+
+    setIsAnimating(true);
+    const canvas = canvasRef.current;
+
     let mediaRecorder: MediaRecorder | null = null;
     let chunks: Blob[] = [];
     let recordingAudio: HTMLAudioElement | null = null;
@@ -1702,7 +2260,6 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
       setProgress({ text: t.recording, percentage: 0 });
       const stream = canvas.captureStream(fps);
 
-      // If an audio track exists, mix it securely into the recording stream
       if (audioUrl) {
         try {
           const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -1713,7 +2270,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
           
           const source = audioCtx.createMediaElementSource(recordingAudio);
           source.connect(dest);
-          source.connect(audioCtx.destination); // Play speaker audio aloud for reference
+          source.connect(audioCtx.destination);
           
           if (audioCtx.state === 'suspended') {
             audioCtx.resume();
@@ -1733,11 +2290,11 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
       try {
         mediaRecorder = new MediaRecorder(stream, { mimeType });
       } catch (err) {
-        console.warn("MediaRecorder creation with mimeType failed, trying default fallback...", err);
+        console.warn("MediaRecorder creation failed, using fallback...", err);
         try {
           mediaRecorder = new MediaRecorder(stream);
         } catch (fallbackErr) {
-          console.error("Critical: MediaRecorder is completely unsupported in this browser environment.", fallbackErr);
+          console.error("MediaRecorder completely unsupported.", fallbackErr);
         }
       }
 
@@ -1747,7 +2304,6 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
           const videoBlob = new Blob(chunks, { type: mediaRecorder?.mimeType || mimeType });
           const url = URL.createObjectURL(videoBlob);
           
-          // Trigger automatic download
           const a = document.createElement('a');
           a.href = url;
           const mimeExt = mimeType.includes('webm') ? 'webm' : 'mp4'; 
@@ -1756,7 +2312,6 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
           a.click();
           document.body.removeChild(a);
           
-          // Clean up URL object after download
           setTimeout(() => URL.revokeObjectURL(url), 1000);
           
           setProgress({ text: t.exportComplete, percentage: 100 });
@@ -1769,189 +2324,31 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
       }
     }
 
-    if (audioUrl) {
-      if (recordMedia && recordingAudio) {
-        recordingAudio.currentTime = 0;
-        recordingAudio.play().catch(e => console.warn("Recording Audio play failed:", e));
-      } else {
-        if (!audioRef.current) audioRef.current = new Audio(audioUrl);
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(e => console.warn("Audio play failed:", e));
-      }
+    if (audioUrl && recordingAudio) {
+      recordingAudio.currentTime = 0;
+      recordingAudio.play().catch(e => console.warn("Recording Audio play failed:", e));
     }
 
     const startTimeMS = performance.now();
-    const maxEndTime = Math.max(...activeElements.map(e => e.startTime + e.duration));
-    const FADE_DUR_S = 2.0; 
-
-    // Store state per element
-    const elementState = activeElements.map(e => ({
-      ...e,
-      lastDrawnIndex: 0
-    }));
+    const maxEndTime = currentTotalTime;
+    const FADE_DUR_S = 2.0;
 
     const drawFrame = (time: number) => {
       const elapsedS = (time - startTimeMS) / 1000;
       
-      let isDrawingDone = elapsedS > maxEndTime;
-      let activePenPoint: {x: number, y: number} | null = null;
-
-      // 1. Position the pen at the active drawing element's current exact frame point
-      if (!isDrawingDone) {
-        for (const el of elementState) {
-          if (elapsedS >= el.startTime && elapsedS <= el.startTime + el.duration) {
-            const progressRatio = (elapsedS - el.startTime) / el.duration;
-            const targetIndex = Math.min(el.points.length - 1, Math.floor(progressRatio * el.points.length));
-            if (targetIndex >= 0 && el.points[targetIndex]) {
-              activePenPoint = el.points[targetIndex];
-            }
-            break; // Stop at first active element
-          }
-        }
-      }
-
-      // 2. Draw incremental mask reveal with trail-lag behind pen
-      if (!isDrawingDone) {
-        for (const el of elementState) {
-          const isPaintMode = el.elementType === 'visual' || colorMode === 'paint';
-          const targetMaskCtx = isPaintMode ? paintMaskCtx : outlineMaskCtx;
-
-          // Set dynamic stroke width and blur per element
-          let brushWidth = Math.max(1, cw / 500);
-          if (el.elementType === 'visual') {
-            brushWidth = Math.max(45, cw / 22);
-            targetMaskCtx.shadowBlur = glowSize * 2;
-          } else {
-            // Thickened brush width for written elements:
-            // This prevents jagged lines and disconnected dot appearances, and ensures elegant, smooth ink strokes.
-            brushWidth = colorMode === 'paint' ? Math.max(28, cw / 35) : Math.max(6.5, cw / 140);
-            targetMaskCtx.shadowBlur = glowSize;
-          }
-          targetMaskCtx.lineWidth = brushWidth;
-
-          if (elapsedS >= el.startTime && elapsedS <= el.startTime + el.duration) {
-            const progressRatio = (elapsedS - el.startTime) / el.duration;
-            const targetIndex = Math.min(el.points.length, Math.floor(progressRatio * el.points.length));
-            
-            // Mathematically guaranteed lag to prevent bleed-ahead:
-            // Since the brush circle extends dynamically by its radius, the mask drawing
-            // must lag behind the pen's focal point (targetIndex) by at least the brush radius.
-            // We append + 12 points for written elements to create a natural paper-writing ink trail gap.
-            const brushRadius = brushWidth / 2;
-            let lagCount = Math.ceil(brushRadius + (el.elementType === 'visual' ? 5 : 12));
-            
-            // Limit lag for extremely short strokes to prevent late sudden reveals
-            if (lagCount > el.points.length * 0.45) {
-              lagCount = Math.floor(el.points.length * 0.45);
-            }
-            
-            const maskTargetIndex = Math.max(0, targetIndex - lagCount);
-            
-            if (maskTargetIndex > el.lastDrawnIndex) {
-              targetMaskCtx.beginPath();
-              const startPt = el.points[el.lastDrawnIndex];
-              if (el.lastDrawnIndex > 0) {
-                 const prevPt = el.points[el.lastDrawnIndex - 1];
-                 targetMaskCtx.moveTo(prevPt.x, prevPt.y);
-              } else {
-                 targetMaskCtx.moveTo(startPt.x, startPt.y);
-              }
-
-              for (let i = el.lastDrawnIndex; i < maskTargetIndex; i++) {
-                const pt = el.points[i];
-                if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
-                else targetMaskCtx.lineTo(pt.x, pt.y);
-              }
-              targetMaskCtx.stroke();
-              el.lastDrawnIndex = maskTargetIndex;
-            }
-          } else if (elapsedS > el.startTime + el.duration && el.lastDrawnIndex < el.points.length) {
-            // Draw remaining trail when element is fully drawn
-            targetMaskCtx.beginPath();
-            if (el.lastDrawnIndex > 0) {
-                 const prevPt = el.points[el.lastDrawnIndex - 1];
-                 targetMaskCtx.moveTo(prevPt.x, prevPt.y);
-            }
-            for (let i = el.lastDrawnIndex; i < el.points.length; i++) {
-                const pt = el.points[i];
-                if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
-                else targetMaskCtx.lineTo(pt.x, pt.y);
-            }
-            targetMaskCtx.stroke();
-            el.lastDrawnIndex = el.points.length;
-          }
-        }
-      }
-
-      // 3. Reveal Canvas update
-      if (!isDrawingDone) {
-        revealCtx.clearRect(0, 0, cw, ch);
-
-        // A. Draw painted/source-in original color graphics
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = cw;
-        tempCanvas.height = ch;
-        const tempCtx = tempCanvas.getContext('2d')!;
-        tempCtx.drawImage(paintMaskCanvas, 0, 0);
-        tempCtx.globalCompositeOperation = 'source-in';
-        tempCtx.drawImage(img, 0, 0, cw, ch);
-
-        // B. Combine masks: first color painting, then outline strokes on top
-        revealCtx.drawImage(tempCanvas, 0, 0);
-        revealCtx.drawImage(outlineMaskCanvas, 0, 0);
-      }
-
-      // 4. Main Canvas Compositing
-      ctx.fillStyle = canvasBgColor;
-      if (canvasBgColor === 'transparent') {
-         ctx.clearRect(0, 0, cw, ch);
-      } else {
-         ctx.fillRect(0, 0, cw, ch);
-      }
-
-      // Base previously revealed image
-      ctx.globalAlpha = baseOpacity / 100;
-      ctx.drawImage(img, 0, 0, cw, ch);
-      
-      // The drawn mask
-      ctx.globalAlpha = 1.0;
-      ctx.drawImage(revealCanvas, 0, 0);
-
-      // 5. Draw Pen
-      if (!isDrawingDone && activePenPoint && penImgRef.current) {
-        const penSizeW = Math.max(80, (cw * penScale) / 100);
-        const penRatio = penImgRef.current.height / penImgRef.current.width;
-        const penSizeH = penSizeW * penRatio;
-        const px = activePenPoint.x - (penSizeW * (penOffsetX / 100));
-        const py = activePenPoint.y - (penSizeH * (penOffsetY / 100));
-        ctx.drawImage(penImgRef.current, px, py, penSizeW, penSizeH);
-      }
-
-      // 6. Fade In Full Image at End
-      if (isDrawingDone) {
-         const fadeTime = elapsedS - maxEndTime;
-         const fadeAlpha = Math.max(0, Math.min(1, fadeTime / FADE_DUR_S));
-         ctx.globalAlpha = fadeAlpha;
-         ctx.drawImage(img, 0, 0, cw, ch);
-         ctx.globalAlpha = 1.0;
-      }
+      drawCanvas(elapsedS);
+      setCurrentTime(Math.min(elapsedS, maxEndTime));
 
       if (elapsedS < maxEndTime + FADE_DUR_S) {
-        if (recordMedia) {
-            const currentTotal = maxEndTime + FADE_DUR_S;
-            const currentPct = Math.min(100, Math.round((elapsedS / currentTotal) * 100));
-            setProgress({ text: t.recording, percentage: currentPct });
-        }
+        const currentTotal = maxEndTime + FADE_DUR_S;
+        const currentPct = Math.min(100, Math.round((elapsedS / currentTotal) * 100));
+        setProgress({ text: t.recording, percentage: currentPct });
         animationRef.current = requestAnimationFrame(drawFrame);
       } else {
         setIsAnimating(false);
         if (recordingAudio) {
           recordingAudio.pause();
           recordingAudio.currentTime = 0;
-        }
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
         }
         if (recordMedia && mediaRecorder) {
           mediaRecorder.stop();
@@ -2068,7 +2465,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
         setScenes(data.scenes);
         
         let currentStart = 0;
-        const newElements: ElementSequence[] = data.scenes.map((scene: StoryboardScene) => {
+        const tempElements: ElementSequence[] = data.scenes.map((scene: StoryboardScene) => {
           const dur = scene.duration_seconds || 5;
           const start = currentStart;
           currentStart += dur;
@@ -2084,8 +2481,35 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
             writingDirection: 'auto' as const
           };
         });
+        setElements(tempElements);
+        setCurrentTime(0);
+
+        // Call the image generation endpoint to generate the storyboard image automatically
+        const imgResponse = await fetch('/api/generate-storyboard-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: scriptInput,
+            style: storyboardStyle,
+            bgColor: 'white',
+            useFreeModel: useFreeModel
+          })
+        });
+
+        if (imgResponse.ok) {
+          const imgData = await imgResponse.json();
+          if (imgData.imageUrl) {
+            setIsStoryboardImg(true);
+            setStoryboardSteps(imgData.steps || []);
+            autoExtractPendingRef.current = true;
+            setCanvasBgColor('#ffffff'); // Force background white
+            setMainImgUrl(imgData.imageUrl);
+            if (imgData.prompt) {
+              setStoryboardPrompt(imgData.prompt);
+            }
+          }
+        }
         
-        setElements(newElements);
         setStoryboardStatus('ACTIVE');
         setStoryboardMode('IDLE');
       }
@@ -2225,7 +2649,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     setElements(newElements);
   };
 
-  const currentTotalTime = elements.length ? elements[elements.length - 1].startTime + elements[elements.length - 1].duration : 0;
+
 
   const TimelineMapping = () => {
     if (!audioUrl) return null;
@@ -2662,7 +3086,19 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                               {audioUrl && (
                                 <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-lg flex flex-col gap-1 text-[10px] text-indigo-700 font-mono">
                                   <span>🎙️ Voiceover Loaded</span>
-                                  <audio src={audioUrl} controls className="w-full h-8 scale-95 mt-1" />
+                                  <div className="flex items-center justify-between mt-2 p-2 bg-white/50 rounded-lg border border-indigo-100/50">
+                                    <button
+                                      type="button"
+                                      onClick={togglePlay}
+                                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-[10px] font-bold uppercase transition-all shadow-sm cursor-pointer flex items-center gap-1"
+                                    >
+                                      {isPlaying ? <span className="w-2 h-2 bg-white rounded-full animate-ping inline-block mr-1" /> : null}
+                                      {isPlaying ? (lang === 'en' ? 'Pause' : 'إيقاف') : (lang === 'en' ? 'Play Voiceover' : 'تشغيل الصوت')}
+                                    </button>
+                                    <span className="text-[10px] font-mono text-slate-500">
+                                      {currentTime.toFixed(1)}s / {audioDuration.toFixed(1)}s
+                                    </span>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -2881,17 +3317,43 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs text-slate-700 font-medium flex justify-between">
                             <span>{t.penSpeed}</span>
-                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{defaultPenSpeed}</span>
+                            {storyboardStatus === 'ACTIVE' ? (
+                              <span className="text-[9px] bg-indigo-50 text-indigo-650 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider animate-pulse">Optimized by AI</span>
+                            ) : (
+                              <span className="text-[10px] font-mono text-indigo-600 font-bold">{defaultPenSpeed}</span>
+                            )}
                           </label>
-                          <input type="range" min="1" max="100" value={defaultPenSpeed} onChange={(e) => setDefaultPenSpeed(Number(e.target.value))} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                          <input 
+                            type="range" 
+                            min="1" 
+                            max="100" 
+                            value={defaultPenSpeed} 
+                            onChange={(e) => setDefaultPenSpeed(Number(e.target.value))} 
+                            disabled={storyboardStatus === 'ACTIVE'}
+                            className={cn("accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none", storyboardStatus === 'ACTIVE' ? "opacity-50 cursor-not-allowed" : "cursor-pointer")} 
+                          />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs text-slate-700 font-medium flex justify-between">
                             <span>{t.edgeSensitivity}</span>
-                            <span className="text-[10px] font-mono text-indigo-600 font-bold">{edgeSensitivity}%</span>
+                            {storyboardStatus === 'ACTIVE' ? (
+                              <span className="text-[9px] bg-indigo-50 text-indigo-650 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider animate-pulse">Optimized by AI</span>
+                            ) : (
+                              <span className="text-[10px] font-mono text-indigo-600 font-bold">{edgeSensitivity}%</span>
+                            )}
                           </label>
-                          <input type="range" min="1" max="100" value={edgeSensitivity} onChange={(e) => setEdgeSensitivity(Number(e.target.value))} onMouseUp={() => { if (mainImgUrl) prepareAnimation(); }} onTouchEnd={() => { if (mainImgUrl) prepareAnimation(); }} className="accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none cursor-pointer" />
+                          <input 
+                            type="range" 
+                            min="1" 
+                            max="100" 
+                            value={edgeSensitivity} 
+                            onChange={(e) => setEdgeSensitivity(Number(e.target.value))} 
+                            onMouseUp={() => { if (mainImgUrl) prepareAnimation(); }} 
+                            onTouchEnd={() => { if (mainImgUrl) prepareAnimation(); }} 
+                            disabled={storyboardStatus === 'ACTIVE'}
+                            className={cn("accent-indigo-600 h-1 bg-slate-200 rounded-full appearance-none", storyboardStatus === 'ACTIVE' ? "opacity-50 cursor-not-allowed" : "cursor-pointer")} 
+                          />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
@@ -2985,9 +3447,8 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
             <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "radial-gradient(#64748b 1.5px, transparent 1.5px)", backgroundSize: "40px 40px" }}></div>
             
             {/* Canvas Aspect Box */}
-            <div 
-              className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-slate-200 shadow-xl flex items-center justify-center p-4 z-5 bg-white/60 backdrop-blur-md animate-in fade-in"
-              style={{ backgroundColor: canvasBgColor === 'transparent' ? 'rgba(255,255,255,0.2)' : canvasBgColor }}
+            <div
+              className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-slate-200 shadow-xl flex items-center justify-center z-5 bg-white animate-in fade-in"
             >
               {/* Floating Vertical Toolbar (Left of Canvas Area) */}
               <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-3 bg-white p-2.5 rounded-2xl shadow-lg border border-slate-200/80 z-30">
@@ -3051,11 +3512,21 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                 <button
                   type="button"
                   disabled={!mainImgUrl || isProcessing || isAnimating || isExporting}
-                  onClick={elements.length === 0 ? prepareAnimation : () => startAnimation(false)}
+                  onClick={elements.length === 0 ? prepareAnimation : togglePlay}
                   className="px-4.5 py-2.5 bg-indigo-50 hover:bg-indigo-100/70 disabled:opacity-50 text-indigo-700 text-[10.5px] font-bold uppercase rounded-full transition-all flex items-center justify-center gap-1.5 border border-indigo-100 shadow-sm cursor-pointer active:scale-95"
                 >
-                  <Play className="w-3.5 h-3.5 fill-current text-indigo-600" />
-                  <span>{isProcessing ? t.processingMap : t.previewSequence}</span>
+                  {isPlaying ? (
+                    <Pause className="w-3.5 h-3.5 fill-current text-indigo-600" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 fill-current text-indigo-600" />
+                  )}
+                  <span>
+                    {isProcessing 
+                      ? t.processingMap 
+                      : (isPlaying 
+                          ? (lang === 'en' ? 'Pause' : 'إيقاف') 
+                          : t.previewSequence)}
+                  </span>
                 </button>
                 <div className="w-px h-5 bg-slate-200" />
                 <button
@@ -3105,6 +3576,18 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                 </div>
               )}
 
+              {/* Floating Camera Scene Badge */}
+              {activeElement && (isPlaying || currentTime > 0) && !isSelectionMode && (
+                <div className="absolute top-4 right-4 z-40 pointer-events-none select-none">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/75 backdrop-blur-sm rounded-full border border-white/10 shadow-lg">
+                    <div className={cn("w-1.5 h-1.5 rounded-full", isPlaying ? "bg-red-500 animate-pulse" : "bg-slate-400")} />
+                    <span className="text-white text-[10px] font-bold tracking-wide">
+                      Camera: {activeElement.label || `Scene ${activeElementIndex + 1}`} Active
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <canvas
                 ref={canvasRef}
                 onPointerDown={handlePointerDown}
@@ -3118,6 +3601,27 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                   isProcessing && "opacity-50 blur-sm grayscale",
                   isSelectionMode && "cursor-crosshair"
                 )}
+                style={(() => {
+                  if (!activeElement || isSelectionMode || isProcessing || !isPlaying) {
+                    return { transition: 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)' } as React.CSSProperties;
+                  }
+                  const { minX, minY, maxX, maxY } = activeElement.bounds;
+                  const cw = canvasRef.current?.width || 1920;
+                  const ch = canvasRef.current?.height || 1080;
+                  if (maxX <= minX + 10 || maxY <= minY + 10) return {};
+                  const cx = (minX + maxX) / 2;
+                  const cy = (minY + maxY) / 2;
+                  const elemW = maxX - minX;
+                  const elemH = maxY - minY;
+                  const rawScale = Math.min(cw / elemW, ch / elemH) * 0.82;
+                  const S = Math.min(Math.max(rawScale, 1.0), 5.5);
+                  return {
+                    transformOrigin: `${((cx / cw) * 100).toFixed(2)}% ${((cy / ch) * 100).toFixed(2)}%`,
+                    transform: `scale(${S.toFixed(3)})`,
+                    transition: 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)',
+                    willChange: 'transform',
+                  } as React.CSSProperties;
+                })()}
               />
             </div>
           </div>
@@ -3130,15 +3634,24 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                 <button
                   type="button"
                   disabled={!mainImgUrl || isProcessing}
-                  onClick={() => startAnimation(false)}
+                  onClick={togglePlay}
                   className="w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-sm disabled:opacity-40 cursor-pointer border border-indigo-600"
-                  title="Play"
+                  title={isPlaying ? "Pause" : "Play"}
                 >
-                  <Play className="w-3.5 h-3.5 fill-current" />
+                  {isPlaying ? (
+                    <Pause className="w-3.5 h-3.5 fill-current" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
+                    setIsPlaying(false);
+                    setCurrentTime(0);
+                    if (audioUrl && audioRef.current) {
+                      audioRef.current.currentTime = 0;
+                    }
                     const canvas = canvasRef.current;
                     if (canvas) {
                       const ctx = canvas.getContext('2d');
@@ -3152,7 +3665,7 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                 </button>
                 <div className="w-px h-4 bg-slate-200" />
                 <span className="text-[10px] text-slate-500 font-mono font-bold">
-                  Duration: {currentTotalTime.toFixed(1)}s / Max: 1800s
+                  Time: {currentTime.toFixed(1)}s / {currentTotalTime.toFixed(1)}s
                 </span>
               </div>
               <div className="flex items-center gap-2 text-slate-550">
@@ -3175,12 +3688,24 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                     className="flex-grow flex flex-col select-none relative" 
                     style={{ width: `${totalTimelineWidth}px` }}
                   >
+                    {/* Playhead indicator bar */}
+                    <div 
+                      className="absolute top-0 bottom-0 w-[2px] bg-indigo-500/80 pointer-events-none z-30 flex flex-col items-center"
+                      style={{ left: `${80 + currentTime * 30}px` }}
+                    >
+                      <div className="w-2.5 h-2.5 bg-indigo-600 rotate-45 -mt-[5px] shadow" />
+                      <div className="w-px h-full bg-indigo-500" />
+                    </div>
+
                     {/* 1. Time Ruler */}
-                    <div className="h-6 border-b border-slate-100 flex items-end relative shrink-0 bg-slate-50/50">
+                    <div 
+                      onClick={handleTimelineClick}
+                      className="h-6 border-b border-slate-100 flex items-end relative shrink-0 bg-slate-50/50 cursor-pointer"
+                    >
                       {Array.from({ length: tickCount }).map((_, i) => (
                         <div 
                           key={i} 
-                          className="absolute bottom-0 text-[8px] font-mono text-slate-400 flex flex-col items-center"
+                          className="absolute bottom-0 text-[8px] font-mono text-slate-400 flex flex-col items-center pointer-events-none"
                           style={{ left: `${80 + i * 60}px` }}
                         >
                           <span className="h-1.5 w-px bg-slate-200 mb-0.5"></span>
