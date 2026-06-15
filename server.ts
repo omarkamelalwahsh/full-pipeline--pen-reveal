@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import os from "os";
 import { spawn } from "child_process";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import multer from "multer";
 import dotenv from "dotenv";
@@ -36,9 +35,8 @@ interface StoryboardScene {
   duration_seconds: number;
 }
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+const app = express();
+const PORT = 3000;
 
   // Middleware for parsing JSON
   app.use(express.json({ limit: '50mb' }));
@@ -132,58 +130,77 @@ async function startServer() {
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   // Helper to call ai.models.generateContent with fallback models and retry on 503/UNAVAILABLE or 429/RESOURCE_EXHAUSTED errors
-  async function generateContentWithRetry(params: Parameters<typeof ai.models.generateContent>[0], options: { maxRetries?: number; initialDelay?: number } = {}) {
+  async function generateContentWithRetry(params: Parameters<typeof ai.models.generateContent>[0], options: { maxRetries?: number; initialDelay?: number; timeoutMs?: number } = {}) {
     const maxRetries = options.maxRetries ?? 2; // Up to 2 retries per model (total 3 attempts per model)
     const initialDelay = options.initialDelay ?? 1000; // 1 second base delay
+    const timeoutMs = options.timeoutMs ?? 8000; // 8 seconds default timeout to fit within Vercel's hobby limit
 
-    const hasAudio = JSON.stringify(params).toLowerCase().includes("audio/");
-    // Only fall back to audio-supporting models if params contains audio
-    const modelFallbacks = hasAudio
-      ? ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.1-pro-preview"]
-      : ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.1-pro-preview"];
-      
-    let lastError: any = null;
+    let timeoutId: NodeJS.Timeout;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error("Gemini API call timed out"));
+      }, timeoutMs);
+    });
 
-    const requestedModel = params.model || "gemini-2.5-flash";
-    const candidateModels = Array.from(new Set([requestedModel, ...modelFallbacks]));
+    const executionPromise = (async () => {
+      const hasAudio = JSON.stringify(params).toLowerCase().includes("audio/");
+      // Only fall back to audio-supporting models if params contains audio
+      const modelFallbacks = hasAudio
+        ? ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.1-pro-preview"]
+        : ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.1-pro-preview"];
+        
+      let lastError: any = null;
 
-    for (const model of candidateModels) {
-      let currentDelay = initialDelay;
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          console.log(`[Gemini API] Querying content with model: ${model} (Attempt ${attempt + 1}/${maxRetries + 1})...`);
-          const updatedParams = { ...params, model };
-          const response = await ai.models.generateContent(updatedParams);
-          return response;
-        } catch (error: any) {
-          lastError = error;
-          const status = error.status || "";
-          const code = error.code || error.status || "";
-          const errorMessage = error.message || JSON.stringify(error) || "";
-          
-          const isRetryable = 
-            errorMessage.includes("503") || 
-            errorMessage.includes("UNAVAILABLE") || 
-            errorMessage.includes("429") || 
-            errorMessage.includes("RESOURCE_EXHAUSTED") ||
-            status === "UNAVAILABLE" ||
-            status === "RESOURCE_EXHAUSTED" ||
-            code === 503 ||
-            code === 429;
+      const requestedModel = params.model || "gemini-2.5-flash";
+      const candidateModels = Array.from(new Set([requestedModel, ...modelFallbacks]));
 
-          if (isRetryable && attempt < maxRetries) {
-            console.warn(`[Gemini API] Model ${model} returned retryable error: "${errorMessage}". Retrying in ${currentDelay}ms...`);
-            await delay(currentDelay);
-            currentDelay *= 2; // exponential backoff
-          } else {
-            console.warn(`[Gemini API] Model ${model} failed completely on attempt ${attempt + 1}: "${errorMessage}".`);
-            break; // Proceed to fallback model
+      for (const model of candidateModels) {
+        let currentDelay = initialDelay;
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            console.log(`[Gemini API] Querying content with model: ${model} (Attempt ${attempt + 1}/${maxRetries + 1})...`);
+            const updatedParams = { ...params, model };
+            const response = await ai.models.generateContent(updatedParams);
+            return response;
+          } catch (error: any) {
+            lastError = error;
+            const status = error.status || "";
+            const code = error.code || error.status || "";
+            const errorMessage = error.message || JSON.stringify(error) || "";
+            
+            const isRetryable = 
+              errorMessage.includes("503") || 
+              errorMessage.includes("UNAVAILABLE") || 
+              errorMessage.includes("429") || 
+              errorMessage.includes("RESOURCE_EXHAUSTED") ||
+              status === "UNAVAILABLE" ||
+              status === "RESOURCE_EXHAUSTED" ||
+              code === 503 ||
+              code === 429;
+
+            if (isRetryable && attempt < maxRetries) {
+              console.warn(`[Gemini API] Model ${model} returned retryable error: "${errorMessage}". Retrying in ${currentDelay}ms...`);
+              await delay(currentDelay);
+              currentDelay *= 2; // exponential backoff
+            } else {
+              console.warn(`[Gemini API] Model ${model} failed completely on attempt ${attempt + 1}: "${errorMessage}".`);
+              break; // Proceed to fallback model
+            }
           }
         }
       }
-    }
 
-    throw lastError || new Error(`Failed to generate content after trying multiple candidate models: ${candidateModels.join(", ")}`);
+      throw lastError || new Error(`Failed to generate content after trying multiple candidate models: ${candidateModels.join(", ")}`);
+    })();
+
+    try {
+      const result = await Promise.race([executionPromise, timeoutPromise]);
+      clearTimeout(timeoutId!);
+      return result;
+    } catch (err) {
+      clearTimeout(timeoutId!);
+      throw err;
+    }
   }
 
   // Multer for audio uploads - increased limits to accept extremely large serialized text field parameters safely
@@ -1647,37 +1664,33 @@ Logic Guidelines:
   });
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
-
   if (!process.env.VERCEL) {
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`\n🚀 Server is running!`);
-      console.log(`🏠 Local:            http://localhost:${PORT}`);
-      const localIps = getLocalIpAddresses();
-      localIps.forEach(ip => {
-        console.log(`🌐 On Your Network:  http://${ip}:${PORT}`);
+    (async () => {
+      if (process.env.NODE_ENV !== "production") {
+        const { createServer: createViteServer } = await import("vite");
+        const vite = await createViteServer({
+          server: { middlewareMode: true },
+          appType: "spa",
+        });
+        app.use(vite.middlewares);
+      } else {
+        const distPath = path.join(process.cwd(), 'dist');
+        app.use(express.static(distPath));
+        app.get('*', (_req, res) => {
+          res.sendFile(path.join(distPath, 'index.html'));
+        });
+      }
+
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`\n🚀 Server is running!`);
+        console.log(`🏠 Local:            http://localhost:${PORT}`);
+        const localIps = getLocalIpAddresses();
+        localIps.forEach(ip => {
+          console.log(`🌐 On Your Network:  http://${ip}:${PORT}`);
+        });
+        console.log(`\n💡 To share this publicly over the internet, click "Share / Invite" in the UI.\n`);
       });
-      console.log(`\n💡 To share this publicly over the internet, click "Share / Invite" in the UI.\n`);
-    });
+    })();
   }
-  
-  return app;
-}
 
-if (!process.env.VERCEL) {
-  startServer();
-}
-
-export { startServer };
+  export default app;
