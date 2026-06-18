@@ -125,7 +125,7 @@ const locales = {
     aiFreeGeminiModel: "Free Gemini (Vector SVG)",
     aiPaidImagenModel: "Paid Imagen-3 (PNG Artwork)",
     geminiEditTitle: "Gemini 2.5 Image Editor 🎨",
-    geminiEditInputPlaceholder: "Describe edits (e.g., add a cartoon banana next to the screen, make background transparent...)",
+    geminiEditInputPlaceholder: "Describe edits (e.g., add a cartoon arrow next to the screen, make background transparent...)",
     geminiEditBtn: "Apply Magic Edit ✨",
     geminiEditing: "Re-imagining with Gemini 2.5... 🪄",
     geminiNoImageError: "Please upload an image or generate a storyboard first to edit!",
@@ -235,7 +235,7 @@ const locales = {
     aiFreeGeminiModel: "جيميني المجاني (رسم متجهي SVG)",
     aiPaidImagenModel: "إيماجين المدفوع (صور PNG فنية)",
     geminiEditTitle: "محرر الصور بجيميني 2.5 🎨",
-    geminiEditInputPlaceholder: "صف تعديلك (مثال: أضف موز كرتوني بجانب الشاشة، اجعل الخلفية شفافة...)",
+    geminiEditInputPlaceholder: "صف تعديلك (مثال: أضف سهماً كرتونياً بجانب الشاشة، اجعل الخلفية شفافة...)",
     geminiEditBtn: "تطبيق التعديل السحري ✨",
     geminiEditing: "جاري التطوير بجيميني 2.5... 🪄",
     geminiNoImageError: "يرجى رفع صورة أولاً أو توليد لوحة القصة الفنية!",
@@ -485,24 +485,24 @@ export default function Workspace() {
   const [scriptMode, setScriptMode] = useState<'upload' | 'text'>('text');
   const [scriptText, setScriptText] = useState<string>(
     `[Section 1]
-مرحباً بكم في عصر الابتكار مع نانو بنانا برو 2.5، الجهاز الصغير الذي يغير قواعد اللعبة الذكية بجودة فائقة وألوان زاهية.
-Welcome to the era of innovation with Nano Banana Pro 2.5, the micro-device changing the smart game with ultra quality and vibrant colors.
+مرحباً بكم في منصة العرض والتحريك التفاعلية، الحل الإبداعي الأمثل لرسم وتوضيح الأفكار بصرياً وبطريقة مبهرة.
+Welcome to the interactive display and animation platform, the ultimate creative solution to sketch and explain ideas visually.
 
 [Section 2]
-يتميز جهاز نانو بنانا برو بقدرة معالجة فائقة السرعة وتصميم مرن يناسب جميع التطبيقات والمشاريع الإبداعية والتعليمية المتقدمة.
-Nano Banana Pro features ultra-fast processing capability and a flexible design fitting all advanced creative and educational projects.
+تتميز المنصة بقدرتها الفائقة على تحويل الخطوط البسيطة إلى عناصر متحركة متكاملة تتبع الصوت بانسجام تام.
+The platform features an exceptional capability to transform simple lines into fully animated elements syncing seamlessly with voice.
 
 [Section 3]
-يدعم المبدعين والرسامين والمهندسين في لوحة تفاعلية متكاملة، لتمكينهم من رسم وتخطيط وتطوير أفكارهم الأكثر تعقيداً بسهولة وسلاسة.
-It supports creators, illustrators, and engineers inside an integrated interactive canvas, enabling them to draw, sketch, and develop complex ideas.
+ندعم المبدعين والرسامين في لوحة تفاعلية متكاملة، لتمكينهم من رسم وتخطيط وتطوير مشاريعهم الأكثر تعقيداً بسهولة وسلاسة.
+We support creators and illustrators on an integrated interactive canvas, enabling them to draw, sketch, and develop their projects smoothly.
 
 [Section 4]
-باستخدام شريحة نانو بنانا الذكية والفرشاة الملوّنة، تتحول لوحة الرسم البيضاء الخاصة بك إلى عالم متحرك نابض بالألوان والحركة المذهلة.
-Using its ultra-smart Nano Banana chip and colorful brush, your whiteboard transforms into an animated world pulsing with brilliant colors and motion.
+باستخدام محرك التحريك الذكي والفرشاة الرقمية، تتحول لوحة الرسم البيضاء الخاصة بك إلى قصة حية تنبض بالحركة والألوان المذهلة.
+Using the smart animation engine and digital brush, your whiteboard transforms into a live story pulsing with motion and colors.
 
 [Section 5]
-ابدأ رحلتك الإبداعية واللونية المذهلة اليوم مع نانو بنانا برو 2.5، واجعل من تصميماتك الفنية لوحات حية تتحرك لتروي قصتك للعالم.
-Start your amazing creative and colorful journey today with Nano Banana Pro 2.5, turning your artistic designs into alive animated scenes.`
+ابدأ رحلتك الإبداعية واللونية المذهلة اليوم، واجعل من تصميماتك الفنية لوحات حية تتحرك لتروي قصتك للعالم بأسره.
+Start your amazing creative and colorful journey today, and turn your artistic designs into alive animated scenes to tell your story.`
   );
   const [isGeneratingVoice, setIsGeneratingVoice] = useState(false);
   const [voiceName, setVoiceName] = useState<string>('Kore');
@@ -512,6 +512,9 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Tracks which isolated frame (scene/element) is currently mounted on the
+  // canvas so we can hard-clear on a scene change and avoid visual ghosting.
+  const lastFrameKeyRef = useRef<string | null>(null);
   
   const [elements, setElements] = useState<ElementSequence[]>([]);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -663,12 +666,13 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     scene_number: number;
     text: string;
     duration_seconds: number;
+    bounds?: { minX: number; minY: number; maxX: number; maxY: number };
   }
   const [storyboardMode, setStoryboardMode] = useState<'IDLE' | 'CREATE' | 'EDIT'>('IDLE');
   const [storyboardStatus, setStoryboardStatus] = useState<'EMPTY' | 'PROCESSING' | 'ACTIVE'>('EMPTY');
   const [scenes, setScenes] = useState<StoryboardScene[]>([]);
   const [scriptInput, setScriptInput] = useState<string>(
-    'يا عمر، شغلنا نانو بنانا وشحنا كل المحركات الحماسية لعيونك! هذا التطوير الجديد يعطينا أداء فائق وقدرة عالية على رسم وتحريك الأفكار. المشهد الأول يعرض الصاروخ ينطلق بسرعة البرق. المشهد الثاني يظهر لوحة الرسم تتلون بالتفاصيل. المشهد الثالث ينتهي برسمة فنية معبرة.'
+    'مرحباً بكم في منصتنا الإبداعية! هذا التطوير الجديد يمنحنا أداءً فائقاً وقدرة عالية على رسم وتحريك الأفكار بشكل مباشر. في المشهد الأول، يعرض الصاروخ ينطلق بسرعة نحو الفضاء. في المشهد الثاني، تظهر لوحة الرسم وتتلون بكل التفاصيل الجميلة. وينتهي المشهد الثالث برسمة فنية معبرة تدل على النجاح الباهر.'
   );
   const [activeSceneText, setActiveSceneText] = useState<string>('');
 
@@ -1509,6 +1513,26 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
       const isHorizontal = canvas.width / canvas.height > 1.5;
 
       const classifyPanel = (cx: number, cy: number, cw: number, ch: number, isHorizontal: boolean): number => {
+        // If elements are initialized with server bounds, group paths by proximity to those bounds
+        const hasValidBounds = elements.length === 5 && elements.every(el => el.bounds && (el.bounds.maxX > el.bounds.minX));
+        if (hasValidBounds) {
+          let bestIdx = 0;
+          let minDistance = Infinity;
+          for (let i = 0; i < 5; i++) {
+            const b = elements[i].bounds;
+            const bCenterX = (b.minX + b.maxX) / 2;
+            const bCenterY = (b.minY + b.maxY) / 2;
+            const dx = cx - bCenterX;
+            const dy = cy - bCenterY;
+            const dist = dx * dx + dy * dy;
+            if (dist < minDistance) {
+              minDistance = dist;
+              bestIdx = i;
+            }
+          }
+          return bestIdx;
+        }
+
         const nx = cx / cw;
         const ny = cy / ch;
         if (isHorizontal) {
@@ -1565,22 +1589,30 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
       // Fill in default safety bounds for empty/low-path panels
       boundsList.forEach((b, sIdx) => {
         if (b.minX === 99999) {
-          if (isHorizontal) {
-            b.minX = (sIdx * 0.2) * canvas.width;
-            b.maxX = ((sIdx + 1) * 0.2) * canvas.width;
-            b.minY = 0;
-            b.maxY = canvas.height;
+          const el = elements[sIdx];
+          if (el && el.bounds && (el.bounds.maxX > el.bounds.minX)) {
+            b.minX = el.bounds.minX;
+            b.maxX = el.bounds.maxX;
+            b.minY = el.bounds.minY;
+            b.maxY = el.bounds.maxY;
           } else {
-            if (sIdx === 0) {
-              b.minX = 0; b.maxX = canvas.width * 0.5; b.minY = 0; b.maxY = canvas.height * 0.38;
-            } else if (sIdx === 1) {
-              b.minX = canvas.width * 0.5; b.maxX = canvas.width; b.minY = 0; b.maxY = canvas.height * 0.38;
-            } else if (sIdx === 2) {
-              b.minX = 0; b.maxX = canvas.width * 0.5; b.minY = canvas.height * 0.38; b.maxY = canvas.height * 0.68;
-            } else if (sIdx === 3) {
-              b.minX = canvas.width * 0.5; b.maxX = canvas.width; b.minY = canvas.height * 0.38; b.maxY = canvas.height * 0.68;
+            if (isHorizontal) {
+              b.minX = (sIdx * 0.2) * canvas.width;
+              b.maxX = ((sIdx + 1) * 0.2) * canvas.width;
+              b.minY = 0;
+              b.maxY = canvas.height;
             } else {
-              b.minX = 0; b.maxX = canvas.width; b.minY = canvas.height * 0.68; b.maxY = canvas.height;
+              if (sIdx === 0) {
+                b.minX = 0; b.maxX = canvas.width * 0.5; b.minY = 0; b.maxY = canvas.height * 0.38;
+              } else if (sIdx === 1) {
+                b.minX = canvas.width * 0.5; b.maxX = canvas.width; b.minY = 0; b.maxY = canvas.height * 0.38;
+              } else if (sIdx === 2) {
+                b.minX = 0; b.maxX = canvas.width * 0.5; b.minY = canvas.height * 0.38; b.maxY = canvas.height * 0.68;
+              } else if (sIdx === 3) {
+                b.minX = canvas.width * 0.5; b.maxX = canvas.width; b.minY = canvas.height * 0.38; b.maxY = canvas.height * 0.68;
+              } else {
+                b.minX = 0; b.maxX = canvas.width; b.minY = canvas.height * 0.68; b.maxY = canvas.height;
+              }
             }
           }
         }
@@ -1911,18 +1943,11 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
           const isFutureElement = el.startTime >= activeScene.endTime;
           const isActiveElement = !isPastElement && !isFutureElement;
 
-          if (isPastElement || isDrawingDone) {
-            // Draw fully
-            targetMaskCtx.beginPath();
-            const startPt = el.points[0];
-            targetMaskCtx.moveTo(startPt.x, startPt.y);
-            for (let i = 1; i < pointsCount; i++) {
-              const pt = el.points[i];
-              if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
-              else targetMaskCtx.lineTo(pt.x, pt.y);
+          if (!isDrawingDone) {
+            if (!isActiveElement) {
+              continue; // Hide all other scenes' assets during playback
             }
-            targetMaskCtx.stroke();
-          } else if (isActiveElement) {
+
             // Compute total stroke points inside this scene
             const activeSceneElements = elements.filter(e => {
               return e.id === activeScene.scene_id || 
@@ -1982,6 +2007,17 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                 activePenPoint = el.points[targetIndex - 1];
               }
             }
+          } else {
+            // Drawing is done: Draw all elements of all scenes fully
+            targetMaskCtx.beginPath();
+            const startPt = el.points[0];
+            targetMaskCtx.moveTo(startPt.x, startPt.y);
+            for (let i = 1; i < pointsCount; i++) {
+              const pt = el.points[i];
+              if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
+              else targetMaskCtx.lineTo(pt.x, pt.y);
+            }
+            targetMaskCtx.stroke();
           }
         }
       }
@@ -2059,80 +2095,81 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     revealCtx.drawImage(tempCanvas, 0, 0);
     revealCtx.drawImage(outlineMaskCanvas, 0, 0);
 
-    let sX = 0, sY = 0, sW = cw, sH = ch;
     let minX = 0, minY = 0, w = cw, h = ch;
     // isDrawingDone is already declared at the top of drawCanvas
-    const shouldZoom = isStoryboardActive && !isSelectionMode && !isDrawingDone;
-    
-    if (shouldZoom) {
-      let cumulativeTime = 0;
-      const scenesWithTime = scenes.map((s) => {
-        const startTime = cumulativeTime;
-        const endTime = cumulativeTime + s.duration_seconds;
-        cumulativeTime = endTime;
-        return {
-          ...s,
-          startTime,
-          endTime,
-        };
-      });
 
-      const activeScene = scenesWithTime.find(s => time >= s.startTime && time <= s.endTime) || scenesWithTime[scenesWithTime.length - 1];
-      
-      if (activeScene) {
-        let tempMinX = 99999, tempMinY = 99999, tempMaxX = -99999, tempMaxY = -99999;
-        const activeSceneElements = elements.filter(el => {
-          return el.id === activeScene.scene_id || 
-                 (el.startTime >= activeScene.startTime && el.startTime < activeScene.endTime);
-        });
-        activeSceneElements.forEach(el => {
-          if (el.bounds) {
-            if (el.bounds.minX < tempMinX) tempMinX = el.bounds.minX;
-            if (el.bounds.minY < tempMinY) tempMinY = el.bounds.minY;
-            if (el.bounds.maxX > tempMaxX) tempMaxX = el.bounds.maxX;
-            if (el.bounds.maxY > tempMaxY) tempMaxY = el.bounds.maxY;
-          }
+    // --- ABSOLUTE SINGLE-FRAME ISOLATION ---
+    // Resolve the bounding box of ONLY the frame active at `time` (the grouped
+    // elements of a storyboard scene, or the single active element otherwise)
+    // and crop strictly to it. The remaining frames of the composite sheet are
+    // never drawn or scaled into view, so exactly one frame fills the canvas.
+    // NOTE: the active frame is derived from the `time` argument (not the
+    // `activeElement` memo) so this stays correct inside the export RAF loop,
+    // where drawCanvas runs from a closure with a frozen render snapshot.
+    let frameBounds: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
+    let frameKey: string | null = null;
+
+    if (!isSelectionMode && !isDrawingDone) {
+      if (isStoryboardActive) {
+        let cumulativeTime = 0;
+        const scenesWithTime = scenes.map((s) => {
+          const startTime = cumulativeTime;
+          const endTime = cumulativeTime + s.duration_seconds;
+          cumulativeTime = endTime;
+          return { ...s, startTime, endTime };
         });
 
-        if (tempMinX !== 99999 && tempMaxX > tempMinX && tempMaxY > tempMinY) {
-          minX = tempMinX;
-          minY = tempMinY;
-          let tempW = tempMaxX - tempMinX;
-          let tempH = tempMaxY - tempMinY;
+        const activeScene = scenesWithTime.find(s => time >= s.startTime && time <= s.endTime) || scenesWithTime[scenesWithTime.length - 1];
 
-          // Limit minimum viewport size to 25% of canvas dimensions to avoid extreme zoom
-          const minW = cw * 0.25;
-          const minH = ch * 0.25;
-          if (tempW < minW) {
-            const centerX = (tempMinX + tempMaxX) / 2;
-            minX = Math.max(0, centerX - minW / 2);
-            const maxX = Math.min(cw, centerX + minW / 2);
-            tempW = maxX - minX;
+        if (activeScene) {
+          frameKey = `scene:${activeScene.scene_id}`;
+          let tempMinX = 99999, tempMinY = 99999, tempMaxX = -99999, tempMaxY = -99999;
+          const activeSceneElements = elements.filter(el => {
+            return el.id === activeScene.scene_id ||
+                   (el.startTime >= activeScene.startTime && el.startTime < activeScene.endTime);
+          });
+          activeSceneElements.forEach(el => {
+            if (el.bounds) {
+              if (el.bounds.minX < tempMinX) tempMinX = el.bounds.minX;
+              if (el.bounds.minY < tempMinY) tempMinY = el.bounds.minY;
+              if (el.bounds.maxX > tempMaxX) tempMaxX = el.bounds.maxX;
+              if (el.bounds.maxY > tempMaxY) tempMaxY = el.bounds.maxY;
+            }
+          });
+          if (tempMinX !== 99999 && tempMaxX > tempMinX && tempMaxY > tempMinY) {
+            frameBounds = { minX: tempMinX, minY: tempMinY, maxX: tempMaxX, maxY: tempMaxY };
           }
-          if (tempH < minH) {
-            const centerY = (tempMinY + tempMaxY) / 2;
-            minY = Math.max(0, centerY - minH / 2);
-            const maxY = Math.min(ch, centerY + minH / 2);
-            tempH = maxY - minY;
-          }
-          w = tempW;
-          h = tempH;
-
-          const paddingX = w * 0.1;
-          const paddingY = h * 0.1;
-          sX = Math.max(0, minX - paddingX);
-          sY = Math.max(0, minY - paddingY);
-          sW = Math.min(cw - sX, w + paddingX * 2);
-          sH = Math.min(ch - sY, h + paddingY * 2);
+        }
+      } else {
+        const activeEl = elements.find(el => time >= el.startTime && time < el.startTime + el.duration)
+          || (time > 0 && elements.length > 0 ? elements[elements.length - 1] : null);
+        if (activeEl && activeEl.bounds && activeEl.bounds.maxX > activeEl.bounds.minX + 10 && activeEl.bounds.maxY > activeEl.bounds.minY + 10) {
+          frameKey = `el:${activeEl.id}`;
+          frameBounds = { ...activeEl.bounds };
         }
       }
     }
 
-    const scaleX = cw / sW;
-    const scaleY = ch / sH;
-    const scale = Math.min(scaleX, scaleY);
-    const offsetX = (cw - sW * scale) / 2;
-    const offsetY = (ch - sH * scale) / 2;
+    const shouldZoom = frameBounds !== null;
+
+    if (frameBounds) {
+      minX = frameBounds.minX;
+      minY = frameBounds.minY;
+      w = frameBounds.maxX - frameBounds.minX;
+      h = frameBounds.maxY - frameBounds.minY;
+    }
+
+    // SMOOTH TRANSITION JUMP: the moment the playhead crosses into a new frame,
+    // wipe the whole canvas before mounting the next isolated frame so no pixels
+    // from the previous scene ghost through during the swap.
+    if (frameKey !== lastFrameKeyRef.current) {
+      ctx.clearRect(0, 0, cw, ch);
+      lastFrameKeyRef.current = frameKey;
+    }
+
+    const scaleX = shouldZoom ? cw / w : 1;
+    const scaleY = shouldZoom ? ch / h : 1;
+    const scale = shouldZoom ? Math.min(scaleX, scaleY) * 0.9 : 1; // 90% view fill
 
     ctx.fillStyle = canvasBgColor;
     if (canvasBgColor === 'transparent') {
@@ -2142,15 +2179,15 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
     }
 
     ctx.save();
-    // Zoom/crop to active panel camera view
-    ctx.translate(offsetX, offsetY);
-    ctx.scale(scale, scale);
-    ctx.translate(-sX, -sY);
 
     if (shouldZoom) {
-      const clipMargin = 5;
+      // Scale and translate the context so this specific box stretches to fill the entire canvas viewport
+      ctx.translate(-minX * scale + (cw - w * scale) / 2, -minY * scale + (ch - h * scale) / 2);
+      ctx.scale(scale, scale);
+
       ctx.beginPath();
-      ctx.rect(minX - clipMargin, minY - clipMargin, w + clipMargin * 2, h + clipMargin * 2);
+      // Create a clipping mask around ONLY the active scene's rectangle box
+      ctx.rect(minX, minY, w, h);
       ctx.clip();
     }
 
@@ -2450,6 +2487,10 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
 
   const handleCreateStoryboard = async () => {
     if (!scriptInput.trim()) return;
+    setScenes([]);
+    setElements([]);
+    setMainImgUrl(null);
+    setIsStoryboardImg(false);
     setStoryboardStatus('PROCESSING');
     setStoryboardMode('CREATE');
     
@@ -2469,13 +2510,23 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
           const dur = scene.duration_seconds || 5;
           const start = currentStart;
           currentStart += dur;
+
+          // Scale bounds from 1920x1080 design space to actual canvas dimensions
+          const sceneBounds = scene.bounds || { minX: 0, maxX: 1920, minY: 0, maxY: 1080 };
+          const canvasWidth = canvasRef.current?.width || 1920;
+          const canvasHeight = canvasRef.current?.height || 1080;
+          const minX = (sceneBounds.minX / 1920) * canvasWidth;
+          const maxX = (sceneBounds.maxX / 1920) * canvasWidth;
+          const minY = (sceneBounds.minY / 1080) * canvasHeight;
+          const maxY = (sceneBounds.maxY / 1080) * canvasHeight;
+
           return {
             id: scene.scene_id,
             paths: [],
             points: [],
             startTime: Number(start.toFixed(1)),
             duration: dur,
-            bounds: { minX: 0, maxX: 100, minY: 0, maxY: 100 },
+            bounds: { minX, maxX, minY, maxY },
             label: lang === 'en' ? `Scene ${scene.scene_number}` : `مشهد ${scene.scene_number}`,
             elementType: 'visual' as const,
             writingDirection: 'auto' as const
@@ -3596,32 +3647,17 @@ Start your amazing creative and colorful journey today with Nano Banana Pro 2.5,
                 onPointerCancel={handlePointerUp}
                 onContextMenu={(e) => e.preventDefault()}
                 className={cn(
-                  "max-w-full max-h-full object-contain pointer-events-auto transition-opacity duration-1000 relative z-10",
+                  // Single isolated frame fills the stage. The pan/scale "camera"
+                  // CSS transform was removed: the active frame is now cropped &
+                  // stretched inside the draw loop, so no composite-sheet panning.
+                  "object-contain pointer-events-auto transition-opacity duration-700 relative z-10",
+                  // In selection mode the element shrinks to its bitmap so brush
+                  // pointer coordinates map 1:1; during playback it fills the view.
+                  isSelectionMode ? "max-w-full max-h-full" : "w-full h-full max-h-[90%]",
                   mainImgUrl && storyboardStatus !== 'EMPTY' ? "opacity-100" : "opacity-0 pointer-events-none absolute",
                   isProcessing && "opacity-50 blur-sm grayscale",
                   isSelectionMode && "cursor-crosshair"
                 )}
-                style={(() => {
-                  if (!activeElement || isSelectionMode || isProcessing || !isPlaying) {
-                    return { transition: 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)' } as React.CSSProperties;
-                  }
-                  const { minX, minY, maxX, maxY } = activeElement.bounds;
-                  const cw = canvasRef.current?.width || 1920;
-                  const ch = canvasRef.current?.height || 1080;
-                  if (maxX <= minX + 10 || maxY <= minY + 10) return {};
-                  const cx = (minX + maxX) / 2;
-                  const cy = (minY + maxY) / 2;
-                  const elemW = maxX - minX;
-                  const elemH = maxY - minY;
-                  const rawScale = Math.min(cw / elemW, ch / elemH) * 0.82;
-                  const S = Math.min(Math.max(rawScale, 1.0), 5.5);
-                  return {
-                    transformOrigin: `${((cx / cw) * 100).toFixed(2)}% ${((cy / ch) * 100).toFixed(2)}%`,
-                    transform: `scale(${S.toFixed(3)})`,
-                    transition: 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)',
-                    willChange: 'transform',
-                  } as React.CSSProperties;
-                })()}
               />
             </div>
           </div>

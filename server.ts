@@ -15,6 +15,7 @@ interface StoryboardStep {
   scriptEn: string;
   desc: string;
   keywords: string[];
+  bounds?: { minX: number; minY: number; maxX: number; maxY: number };
 }
 
 interface SyncElement {
@@ -34,6 +35,7 @@ interface StoryboardScene {
   text: string;
   duration_seconds: number;
   keywords: string[];
+  bounds?: { minX: number; minY: number; maxX: number; maxY: number };
 }
 
 const app = express();
@@ -134,7 +136,7 @@ const PORT = 3000;
   async function generateContentWithRetry(params: Parameters<typeof ai.models.generateContent>[0], options: { maxRetries?: number; initialDelay?: number; timeoutMs?: number } = {}) {
     const maxRetries = options.maxRetries ?? 2; // Up to 2 retries per model (total 3 attempts per model)
     const initialDelay = options.initialDelay ?? 1000; // 1 second base delay
-    const timeoutMs = options.timeoutMs ?? 8000; // 8 seconds default timeout to fit within Vercel's hobby limit
+    const timeoutMs = options.timeoutMs ?? 45000; // 45 seconds default timeout to fit within Vercel's hobby limit
 
     let timeoutId: NodeJS.Timeout;
     const timeoutPromise = new Promise<never>((_, reject) => {
@@ -767,15 +769,23 @@ const PORT = 3000;
 
   // Helper to parse transcription script into 5 structured sequential scenes with Gemini
   async function parseScriptIntoSteps(text: string): Promise<StoryboardStep[]> {
+    const fallbackBounds = [
+      { minX: 50, maxX: 900, minY: 50, maxY: 500 },
+      { minX: 1020, maxX: 1870, minY: 50, maxY: 500 },
+      { minX: 50, maxX: 600, minY: 580, maxY: 1030 },
+      { minX: 700, maxX: 1250, minY: 580, maxY: 1030 },
+      { minX: 1350, maxX: 1870, minY: 580, maxY: 1030 }
+    ];
+
     try {
       const prompt = `
         You are an expert storyboard visualizer.
         Parse this audio script or transcription text into EXACTLY 5 chronological storyboard scenes/steps.
-        The input text contains multilingual narratives (Arabic and English) about a whiteboard animation for "Nano Banana Pro 2.5" or similar projects.
+        The input text contains multilingual narratives (Arabic and English) about a whiteboard animation project.
         
         For each of the 5 chronological steps, extract:
-        1. "titleAr": A short catchy title in Arabic (RTL, e.g., "مقدمة نانو بنانا 2.5").
-        2. "titleEn": A short catchy title in English (LTR, e.g., "Nano Banana 2.5 Intro").
+        1. "titleAr": A short catchy title in Arabic (RTL, e.g., "المشهد الأول: البداية").
+        2. "titleEn": A short catchy title in English (LTR, e.g., "Intro Scene").
         3. "scriptAr": The specific right-to-left Arabic script/voiceover segment for this step.
         4. "scriptEn": The specific left-to-right English script/voiceover segment for this step.
         5. "desc": A detailed conceptual description of the visual illustration/webcomic panel drawing showing whiteboard animations, cute whiteboard doodles, lines, arrows, annotations, and colorful graphics matching the scene.
@@ -816,7 +826,10 @@ const PORT = 3000;
 
       const parsed = JSON.parse(response.text || "[]");
       if (Array.isArray(parsed) && parsed.length === 5) {
-        return parsed;
+        return parsed.map((item, idx) => ({
+          ...item,
+          bounds: fallbackBounds[idx]
+        }));
       }
     } catch (err) {
       console.error("Failed to parse script with Gemini, using split fallback:", err);
@@ -825,7 +838,7 @@ const PORT = 3000;
     // Pure procedural fallback if LLM parser fails
     const words = text.split(/\s+/).filter(Boolean);
     const wordsPerStep = Math.max(1, Math.ceil(words.length / 5));
-    const fallbackSteps: Array<{ titleAr: string; titleEn: string; scriptAr: string; scriptEn: string; desc: string; keywords: string[] }> = [];
+    const fallbackSteps: StoryboardStep[] = [];
     for (let i = 0; i < 5; i++) {
       const stepWords = words.slice(i * wordsPerStep, (i + 1) * wordsPerStep);
       const titleEn = `Step ${i + 1}: ${stepWords.slice(0, 3).join(' ') || 'Progress'}`;
@@ -837,87 +850,17 @@ const PORT = 3000;
         scriptAr: `البرمجة السردية للخطوة ${i + 1}: ${desc}`,
         scriptEn: `Narrative script for Step ${i + 1}: ${desc}`,
         desc: desc.length > 50 ? desc.substring(0, 47) + '...' : desc,
-        keywords: stepWords.slice(0, 2)
+        keywords: stepWords.slice(0, 2),
+        bounds: fallbackBounds[i]
       });
     }
     return fallbackSteps;
   }
 
   // Generates high-fidelity vector storyboard SVGs dynamically to serve as a stunning, reliable fallback
-  function generateFallbackStoryboardSVG(steps: Array<any>, style: string, bgColor: string): string {
-    const isDark = bgColor === 'black';
-    const bg = isDark ? '#050505' : '#ffffff';
-    const stroke = isDark ? '#ffffff' : '#0a0a0a';
-    const accent = isDark ? '#fbbf24' : '#d97706'; // amber-400 / amber-600
-    const subText = isDark ? '#a1a1aa' : '#52525b'; // zinc-400 / zinc-600
-
-    let panelBorderProps = `stroke="${stroke}" stroke-width="3" fill="none"`;
-    let connectionArrows = '';
-    let gridBordersStyle = '';
-    let customStyleDefs = '';
-
-    if (style === 'Sketch Note') {
-      panelBorderProps = `stroke="${stroke}" stroke-width="3.5" stroke-dasharray="10 5" rx="14" fill="none"`;
-      connectionArrows = `
-        <!-- Arrow 1 to 2 -->
-        <path d="M 370 110 Q 400 90, 410 110" fill="none" stroke="${accent}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-        <!-- Arrow 2 to 4 -->
-        <path d="M 590 260 Q 590 290, 560 320" fill="none" stroke="${accent}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-        <!-- Arrow 3 to 4 -->
-        <path d="M 265 425 Q 290 425, 305 425" fill="none" stroke="${accent}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-        <!-- Arrow 4 to 5 -->
-        <path d="M 400 530 Q 400 565, 370 590" fill="none" stroke="${accent}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-      `;
-      customStyleDefs = `
-        <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 1 L 10 5 L 0 9 z" fill="${accent}" />
-        </marker>
-      `;
-    } else if (style === 'Scientific') {
-      panelBorderProps = `stroke="${stroke}" stroke-width="2" rx="4" fill="none"`;
-      gridBordersStyle = `
-        <pattern id="blueprintGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="${isDark ? '#0ea5e9' : '#38bdf8'}" stroke-width="1" opacity="0.12" />
-        </pattern>
-        <rect width="800" height="800" fill="url(#blueprintGrid)" />
-        <path d="M 30 20 H 50 M 40 10 V 30 M 750 20 H 770 M 760 10 V 30 M 30 780 H 50 M 40 770 V 790 M 750 780 H 770 M 760 770 V 790" stroke="${accent}" stroke-width="1.5" />
-      `;
-    } else if (style === 'Kawaii') {
-      panelBorderProps = `stroke="${stroke}" stroke-width="4.5" rx="24" fill="none"`;
-      customStyleDefs = `
-        <g id="kawaiiFace" fill="${stroke}">
-          <circle cx="-12" cy="0" r="3" />
-          <circle cx="12" cy="0" r="3" />
-          <path d="M -4 5 Q 0 8 4 5" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" />
-          <circle cx="-18" cy="4" r="4" fill="#f472b6" opacity="0.6" />
-          <circle cx="18" cy="4" r="4" fill="#f472b6" opacity="0.6" />
-        </g>
-      `;
-    } else if (style === 'Bento Grid') {
-      panelBorderProps = `stroke="${stroke}" stroke-dasharray="0" stroke-width="4" rx="20" fill="none"`;
-    } else if (style === 'Comic Strip') {
-      panelBorderProps = `stroke="${stroke}" stroke-width="4" rx="0" fill="none"`;
-      gridBordersStyle = `
-        <!-- Dynamic comic book panel dividers with stylized angles -->
-        <g stroke="${stroke}" stroke-width="4" stroke-linecap="round">
-          <line x1="395" y1="40" x2="405" y2="270" />
-          <line x1="155" y1="310" x2="165" y2="540" />
-          <line x1="535" y1="310" x2="545" y2="540" />
-        </g>
-      `;
-    } else if (style === 'Editorial') {
-      panelBorderProps = `stroke="${stroke}" stroke-width="1.5" rx="0" fill="none"`;
-    }
-
-    const maybeKawaiiFace = (x: number, y: number) => {
-      if (style === 'Kawaii') {
-        return `<use href="#kawaiiFace" x="${x}" y="${y}" />`;
-      }
-      return '';
-    };
-
+  function generateFallbackStoryboardSVG(steps: Array<any>, _style: string, _bgColor: string): string {
     const escapeXml = (unsafe: string) => {
-      return unsafe.replace(/[<>&'"]/g, (c) => {
+      return (unsafe || "").replace(/[<>&'"]/g, (c) => {
         switch (c) {
           case '<': return '&lt;';
           case '>': return '&gt;';
@@ -929,124 +872,65 @@ const PORT = 3000;
       });
     };
 
+    const getSceneText = (step: any): string => {
+      if (!step) return '';
+      const title = step.titleEn || step.title || '';
+      const body = step.scriptEn || step.desc || step.text || '';
+      const fullText = title ? `${title}: ${body}` : body;
+      return escapeXml(fullText.replace(/[\r\n\t]+/g, ' ').trim());
+    };
+
+    // Distinct accent color per bento cell.
+    const accents = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+    // Minimalist single-stroke line icons, each drawn inside a local 56x56 box.
+    const icons = [
+      '<rect x="6" y="6" width="44" height="32" rx="4" /><line x1="13" y1="16" x2="43" y2="16" /><line x1="13" y1="24" x2="34" y2="24" /><line x1="2" y1="48" x2="54" y2="48" stroke-width="3.5" />',
+      '<path d="M28 6 a16 16 0 0 1 9 29 v5 h-18 v-5 a16 16 0 0 1 9 -29 Z" /><line x1="22" y1="46" x2="34" y2="46" /><line x1="24" y1="51" x2="32" y2="51" />',
+      '<path d="M8 10 h40 a4 4 0 0 1 4 4 v18 a4 4 0 0 1 -4 4 h-24 l-10 8 v-8 h-6 a4 4 0 0 1 -4 -4 v-18 a4 4 0 0 1 4 -4 Z" /><line x1="18" y1="20" x2="40" y2="20" /><line x1="18" y1="28" x2="34" y2="28" />',
+      '<path d="M8 6 v40 h44" /><path d="M14 40 l11 -13 l9 7 l16 -20" /><path d="M44 14 h7 v7" />',
+      '<circle cx="28" cy="28" r="20" /><circle cx="28" cy="28" r="11" /><circle cx="28" cy="28" r="3.5" fill="currentColor" stroke="none" />',
+    ];
+
+    // Bento layout: matching coordinates exactly
+    const cells = [
+      { x: 50,   y: 50,   w: 850, h: 450 },
+      { x: 1020, y: 50,   w: 850, h: 450 },
+      { x: 50,   y: 580,  w: 550, h: 450 },
+      { x: 700,  y: 580,  w: 550, h: 450 },
+      { x: 1350, y: 580,  w: 520, h: 450 },
+    ];
+
+    const buildPanel = (i: number): string => {
+      const c = cells[i];
+      const accent = accents[i];
+      const text = getSceneText(steps[i]);
+      const iconX = Math.round(c.x + c.w / 2 - 39.2);
+      const iconY = c.y + 40;
+      const dividerX = Math.round(c.x + c.w / 2 - 35);
+      return `
+        <g>
+          <rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="24" fill="#ffffff" stroke="#e2e8f0" stroke-width="3.5" />
+          <circle cx="${c.x + 45}" cy="${c.y + 45}" r="22" fill="${accent}" />
+          <text x="${c.x + 45}" y="${c.y + 51}" fill="#ffffff" font-size="18" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">${i + 1}</text>
+          <g transform="translate(${iconX}, ${iconY}) scale(1.4)" fill="none" stroke="${accent}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: ${accent}">
+            ${icons[i]}
+          </g>
+          <rect x="${dividerX}" y="${c.y + 130}" width="70" height="4.5" rx="2" fill="${accent}" opacity="0.3" />
+          <foreignObject x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; padding: 160px 40px 30px 40px; font-family: system-ui, -apple-system, sans-serif; font-size: 18px; color: #334155; line-height: 1.6; text-align: center; word-wrap: break-word; overflow-wrap: break-word; overflow: hidden; font-weight: 500;">
+              ${text}
+            </div>
+          </foreignObject>
+        </g>`;
+    };
+
+    const panels = cells.map((_, i) => buildPanel(i)).join('\n');
+
     const svgContent = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%" style="background-color: ${bg}; font-family: system-ui, -apple-system, sans-serif;">
-        <defs>
-          ${customStyleDefs}
-        </defs>
-
-        <rect width="800" height="800" fill="${bg}" />
-        ${gridBordersStyle}
-        ${connectionArrows}
-
-        <!-- Panel 1 -->
-        <g>
-          <rect x="40" y="40" width="340" height="230" ${panelBorderProps} />
-          <circle cx="70" cy="70" r="16" fill="${accent}" />
-          <text x="70" y="74" fill="${bg}" font-size="12" font-weight="bold" text-anchor="middle">1</text>
-          
-          <g transform="translate(170, 48)" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M 40 10 A 30 30 0 1 1 40 70 L 35 85 L 45 85 Z" />
-            <path d="M 30 85 H 50" />
-            <path d="M 35 93 H 45" />
-            <path d="M 40 30 V 50 M 30 40 H 50" />
-            <line x1="40" y1="0" x2="40" y2="-8" />
-            <line x1="8" y1="20" x2="0" y2="15" />
-            <line x1="72" y1="20" x2="80" y2="15" />
-          </g>
-          ${maybeKawaiiFace(210, 110)}
-          
-          <text x="210" y="172" fill="${stroke}" font-size="13" font-weight="bold" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[0]?.titleAr || steps[0]?.title || 'فكرة نانو بنانا')}</text>
-          <text x="210" y="188" fill="${stroke}" font-size="10.5" font-weight="500" text-anchor="middle">${escapeXml(steps[0]?.titleEn || 'Nano Banana Concept')}</text>
-          <text x="210" y="208" fill="${subText}" font-size="9.5" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[0]?.scriptAr || '')}</text>
-          <text x="210" y="224" fill="${subText}" font-size="9" text-anchor="middle" font-style="italic">${escapeXml(steps[0]?.scriptEn || steps[0]?.desc || '')}</text>
-        </g>
-
-        <!-- Panel 2 -->
-        <g>
-          <rect x="420" y="40" width="340" height="230" ${panelBorderProps} />
-          <circle cx="450" cy="70" r="16" fill="${accent}" />
-          <text x="450" y="74" fill="${bg}" font-size="12" font-weight="bold" text-anchor="middle">2</text>
-          
-          <g transform="translate(550, 48)" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="30" cy="30" r="18" />
-            <circle cx="30" cy="30" r="6" />
-            <path d="M 30 6 V 12 M 30 48 V 54 M 6 30 H 12 M 48 30 H 54 M 13 13 L 17 17 M 47 47 L 43 43 M 47 13 L 43 17 M 13 47 L 17 43" />
-            <circle cx="58" cy="48" r="12" />
-            <circle cx="58" cy="48" r="4" />
-            <path d="M 58 32 V 36 M 58 60 V 64 M 42 48 H 46 M 70 48 H 74" />
-          </g>
-          ${maybeKawaiiFace(590, 110)}
-          
-          <text x="590" y="172" fill="${stroke}" font-size="13" font-weight="bold" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[1]?.titleAr || steps[1]?.title || 'ميزات نانو بنانا القوية')}</text>
-          <text x="590" y="188" fill="${stroke}" font-size="10.5" font-weight="500" text-anchor="middle">${escapeXml(steps[1]?.titleEn || 'Ultra Performance & Design')}</text>
-          <text x="590" y="208" fill="${subText}" font-size="9.5" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[1]?.scriptAr || '')}</text>
-          <text x="590" y="224" fill="${subText}" font-size="9" text-anchor="middle" font-style="italic">${escapeXml(steps[1]?.scriptEn || steps[1]?.desc || '')}</text>
-        </g>
-
-        <!-- Panel 3 -->
-        <g>
-          <rect x="40" y="310" width="235" height="230" ${panelBorderProps} />
-          <circle cx="70" cy="340" r="16" fill="${accent}" />
-          <text x="70" y="344" fill="${bg}" font-size="12" font-weight="bold" text-anchor="middle">3</text>
-          
-          <g transform="translate(115, 318)" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="42" cy="42" r="32" />
-            <ellipse cx="42" cy="42" rx="32" ry="12" />
-            <ellipse cx="42" cy="42" rx="12" ry="32" />
-            <line x1="42" y1="10" x2="42" y2="74" />
-            <line x1="10" y1="42" x2="74" y2="42" />
-          </g>
-          ${maybeKawaiiFace(157.5, 375)}
-          
-          <text x="157.5" y="442" fill="${stroke}" font-size="13" font-weight="bold" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[2]?.titleAr || steps[2]?.title || 'لوحة الرسم التفاعلية')}</text>
-          <text x="157.5" y="458" fill="${stroke}" font-size="10.5" font-weight="500" text-anchor="middle">${escapeXml(steps[2]?.titleEn || 'Interactive Canvas Development')}</text>
-          <text x="157.5" y="478" fill="${subText}" font-size="9.5" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[2]?.scriptAr || '')}</text>
-          <text x="157.5" y="494" fill="${subText}" font-size="9" text-anchor="middle" font-style="italic">${escapeXml(steps[2]?.scriptEn || steps[2]?.desc || '')}</text>
-        </g>
-
-        <!-- Panel 4 -->
-        <g>
-          <rect x="315" y="310" width="445" height="230" ${panelBorderProps} />
-          <circle cx="345" cy="340" r="16" fill="${accent}" />
-          <text x="345" y="344" fill="${bg}" font-size="12" font-weight="bold" text-anchor="middle">4</text>
-          
-          <g transform="translate(495, 318)" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M 20 20 C 20 10, 60 10, 60 20 L 60 60 C 60 70, 20 70, 20 60 Z" />
-            <path d="M 20 35 C 20 28, 60 28, 60 35" />
-            <path d="M 20 50 C 20 43, 60 43, 60 50" />
-            <path d="M 72 55 L 88 35 L 104 45 L 120 20" />
-            <polygon points="120,20 112,24 116,14" fill="${stroke}" />
-          </g>
-          ${maybeKawaiiFace(537.5, 375)}
-          
-          <text x="537.5" y="442" fill="${stroke}" font-size="13" font-weight="bold" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[3]?.titleAr || steps[3]?.title || 'عجائب الرسوم المتحركة')}</text>
-          <text x="537.5" y="458" fill="${stroke}" font-size="10.5" font-weight="500" text-anchor="middle">${escapeXml(steps[3]?.titleEn || 'Whiteboard Magic')}</text>
-          <text x="537.5" y="478" fill="${subText}" font-size="9.5" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[3]?.scriptAr || '')}</text>
-          <text x="537.5" y="494" fill="${subText}" font-size="9" text-anchor="middle" font-style="italic">${escapeXml(steps[3]?.scriptEn || steps[3]?.desc || '')}</text>
-        </g>
-
-        <!-- Panel 5 -->
-        <g>
-          <rect x="40" y="580" width="720" height="180" ${panelBorderProps} />
-          <circle cx="70" cy="610" r="16" fill="${accent}" />
-          <text x="70" y="614" fill="${bg}" font-size="12" font-weight="bold" text-anchor="middle">5</text>
-          
-          <g transform="translate(360, 582)" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M 20 10 H 60 L 54 44 C 50 54, 30 54, 26 44 Z" />
-            <path d="M 40 50 V 62 H 30 V 70 H 50 V 62 H 40" />
-            <path d="M 20 22 C 10 22, 10 34, 20 34" />
-            <path d="M 60 22 C 70 22, 70 34, 60 34" />
-            <path d="M 5 5 L 10 7 L 5 9 L 3 7 Z" fill="${accent}" stroke="none" />
-            <path d="M 75 5 L 80 7 L 75 9 L 73 7 Z" fill="${accent}" stroke="none" />
-          </g>
-          ${maybeKawaiiFace(400, 620)}
-          
-          <text x="400" y="688" fill="${stroke}" font-size="14" font-weight="bold" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[4]?.titleAr || steps[4]?.title || 'ابدأ رحلتك الإبداعية واللونية اليوم')}</text>
-          <text x="400" y="704" fill="${stroke}" font-size="11" font-weight="500" text-anchor="middle">${escapeXml(steps[4]?.titleEn || 'Launch Your Creation')}</text>
-          <text x="400" y="722" fill="${subText}" font-size="9.5" text-anchor="middle" direction="rtl" unicode-bidi="embed">${escapeXml(steps[4]?.scriptAr || '')}</text>
-          <text x="400" y="738" fill="${subText}" font-size="9" text-anchor="middle" font-style="italic">${escapeXml(steps[4]?.scriptEn || steps[4]?.desc || '')}</text>
-        </g>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%" style="background-color: #ffffff; font-family: system-ui, -apple-system, sans-serif;">
+        <rect width="1920" height="1080" fill="#ffffff" />
+        ${panels}
       </svg>
     `;
 
@@ -1264,6 +1148,26 @@ Logic Guidelines:
         const isDark = bgColor === 'black';
         const bg = isDark ? '#050505' : '#ffffff';
         
+        const panelPrompts = steps.map((s, idx) => {
+          const xMin = idx * 240;
+          const xMax = (idx + 1) * 240;
+          const xCenter = xMin + 120;
+          return `
+          - Panel ${idx + 1}:
+            * Horizontal coordinate space: x ranges strictly from ${xMin + 15} to ${xMax - 15}. Keep ALL visual sketch lines, shapes, and paths for this panel inside these coordinates so they do not bleed into neighbor panels.
+            * Arabic Title: "${s.titleAr}"
+            * Arabic Script: "${s.scriptAr}"
+            * English Title: "${s.titleEn}"
+            * English Script: "${s.scriptEn}"
+            * Visual Concept to draw: ${s.desc}
+            * Caption ribbon details:
+              - Draw a background rectangle for the caption at x="${xMin + 10}", y="420", width="220", height="70".
+              - Inside it, draw the Arabic text: "${escapeXml(s.scriptAr)}" at x="${xCenter}", y="445", text-anchor="middle", fill="white", font-size="10.5", font-weight="bold".
+              - Draw the English text: "${escapeXml(s.scriptEn)}" at x="${xCenter}", y="475", text-anchor="middle", fill="white", font-size="9.5".
+              - Draw a circle badge with number "${idx + 1}" centered at x="${xMin + 25}", y="35", r="15".
+          `;
+        }).join('\n');
+
         const svgGenerationPrompt = `
           You are an expert high-fidelity illustrator and master SVG graphics designer specializing in whiteboard animation storyboards.
           Your task is to write a single, breathtakingly beautiful, vibrant, and incredibly detailed comic strip storyboard as a valid <svg> XML graphic code.
@@ -1282,25 +1186,17 @@ Logic Guidelines:
             - Panel 4: Magic & Imagination (vivid purple to gold stars gradient)
             - Panel 5: Bright outcome & Celebration (radiant sunshine-orange to lime-green gradient)
             
-          For each of the 5 panels, you MUST render a gorgeous, highly creative, recognizable vector whiteboard sketch or drawing that represents the corresponding step's title, description, and keywords.
-          Each panel should contain detailed colorful vector shapes, lines, arrows, annotations, and doodles (like bananas, microchips, glowing lightbulbs, tech gadgets, interfaces, screens, or users drawing) matching these parsed details:
-          ${steps.map((s, idx) => `
-            - Panel ${idx + 1}:
-              * Arabic Title & Script: ${s.titleAr} - ${s.scriptAr}
-              * English Title & Script: ${s.titleEn} - ${s.scriptEn}
-              * Visual Concept sketch: ${s.desc}
-          `).join('\n')}
+          Here are the specific details, coordinates, and content for each of the 5 panels:
+          ${panelPrompts}
 
           Detailed SVG Graphic elements to draw inside panels:
-          - Render extremely rich, recognizable doodles, paths, circles, and curves representing the themes of each panel. Make the drawings detailed and layered, not just simple shapes!
+          - For each panel, render extremely rich, detailed, recognizable doodles, paths, circles, and curves representing the visual concepts described above. Make the drawings detailed and layered, not just simple shapes!
+          - Crucial: Ensure ALL drawings and caption text for Panel N are positioned strictly inside its horizontal coordinate space.
           
           Multilingual Caption ribbons (CRITICAL):
-          - For each panel, design a beautiful semi-transparent or solid white/dark overlay banner ribbon at the bottom of the panel.
-          - Inside each ribbon/overlay, you MUST place TWO separate lines of clean XML <text> tags:
-            1. The FIRST line (top of the ribbon) MUST display the Arabic script: "${escapeXml(steps[0]?.scriptAr)}" (or respectively for that panel) using direction="rtl" and unicode-bidi="embed" with gold, white, or high-contrast color.
-            2. The SECOND line (bottom of the ribbon) MUST display the English script: "${escapeXml(steps[0]?.scriptEn)}" (or respectively for that panel) using standard left-to-right alignment.
-          - Make sure text is positioned safely so it's fully readable, never overlaps with the drawings, and centers nicely.
-          - Let's overlap the panel number (1, 2, 3, 4, 5) wrapped inside a bright stylized solid circle badge.
+          - For each panel, implement the caption ribbon using the specific details and text provided under the Panel list above.
+          - Make sure text is positioned safely so it's fully readable, never overlaps with the drawings, and centers nicely within the panel's width.
+          - Place the circle panel number badge (1, 2, 3, 4, 5) at the top left of each panel.
 
           Make the SVG look exceptionally active, lively, premium, colorful, and textured. Write valid, complete XML.
         `;
@@ -1348,11 +1244,11 @@ Logic Guidelines:
       let base64Image = "";
       let usedModel = "";
 
-      // Try 1: imagen-3.0-generate-002
+      // Try 1: imagen-4.0-generate-001
       try {
-        console.log("Attempting image generation via imagen-3.0-generate-002...");
+        console.log("Attempting image generation via imagen-4.0-generate-001...");
         const imageRes = await ai.models.generateImages({
-          model: 'imagen-3.0-generate-002',
+          model: 'imagen-4.0-generate-001',
           prompt: expandedPrompt,
           config: {
             numberOfImages: 1,
@@ -1361,10 +1257,10 @@ Logic Guidelines:
         });
         if (imageRes.generatedImages?.[0]?.image?.imageBytes) {
           base64Image = imageRes.generatedImages[0].image.imageBytes;
-          usedModel = 'imagen-3.0-generate-002';
+          usedModel = 'imagen-4.0-generate-001';
         }
       } catch (err: any) {
-        console.warn("Imagen 3.0-generate-002 failed, trying gemini-3.1-flash-image fallback", err.message);
+        console.warn("Imagen 4.0-generate-001 failed, trying gemini-3.1-flash-image fallback", err.message);
       }
 
       // Try 2: gemini-3.1-flash-image (high quality paid model)
@@ -1626,13 +1522,22 @@ Logic Guidelines:
         });
       }
 
+      const fallbackBounds = [
+        { minX: 50, maxX: 900, minY: 50, maxY: 500 },
+        { minX: 1020, maxX: 1870, minY: 50, maxY: 500 },
+        { minX: 50, maxX: 600, minY: 580, maxY: 1030 },
+        { minX: 700, maxX: 1250, minY: 580, maxY: 1030 },
+        { minX: 1350, maxX: 1870, minY: 580, maxY: 1030 }
+      ];
+
       // Map to add scene_id
       const formattedScenes = scenes.map((s, idx) => ({
         scene_id: `scene-${Date.now()}-${idx}-${Math.floor(Math.random() * 1000)}`,
         scene_number: s.scene_number || (idx + 1),
         text: s.text || "",
         duration_seconds: s.duration_seconds || 5,
-        keywords: s.keywords || []
+        keywords: s.keywords || [],
+        bounds: fallbackBounds[idx] || { minX: 0, maxX: 100, minY: 0, maxY: 100 }
       }));
 
       res.json({ scenes: formattedScenes });
@@ -1678,6 +1583,7 @@ Logic Guidelines:
         const vite = await createViteServer({
           server: { middlewareMode: true },
           appType: "spa",
+          configLoader: "runner",
         });
         app.use(vite.middlewares);
       } else {

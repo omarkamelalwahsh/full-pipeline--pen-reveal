@@ -1,0 +1,82 @@
+  function generateFallbackStoryboardSVG(steps: Array<any>, _style: string, _bgColor: string): string {
+    const escapeXml = (unsafe: string) => {
+      return (unsafe || "").replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '&': return '&amp;';
+          case '\'': return '&apos;';
+          case '"': return '&quot;';
+          default: return c;
+        }
+      });
+    };
+
+    const getSceneText = (step: any): string => {
+      if (!step) return '';
+      const title = step.titleEn || step.title || '';
+      const body = step.scriptEn || step.desc || step.text || '';
+      const fullText = title ? `${title}: ${body}` : body;
+      return escapeXml(fullText.replace(/[\r\n\t]+/g, ' ').trim());
+    };
+
+    // Distinct accent color per bento cell.
+    const accents = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+    // Minimalist single-stroke line icons, each drawn inside a local 56x56 box.
+    const icons = [
+      '<rect x="6" y="6" width="44" height="32" rx="4" /><line x1="13" y1="16" x2="43" y2="16" /><line x1="13" y1="24" x2="34" y2="24" /><line x1="2" y1="48" x2="54" y2="48" stroke-width="3.5" />',
+      '<path d="M28 6 a16 16 0 0 1 9 29 v5 h-18 v-5 a16 16 0 0 1 9 -29 Z" /><line x1="22" y1="46" x2="34" y2="46" /><line x1="24" y1="51" x2="32" y2="51" />',
+      '<path d="M8 10 h40 a4 4 0 0 1 4 4 v18 a4 4 0 0 1 -4 4 h-24 l-10 8 v-8 h-6 a4 4 0 0 1 -4 -4 v-18 a4 4 0 0 1 4 -4 Z" /><line x1="18" y1="20" x2="40" y2="20" /><line x1="18" y1="28" x2="34" y2="28" />',
+      '<path d="M8 6 v40 h44" /><path d="M14 40 l11 -13 l9 7 l16 -20" /><path d="M44 14 h7 v7" />',
+      '<circle cx="28" cy="28" r="20" /><circle cx="28" cy="28" r="11" /><circle cx="28" cy="28" r="3.5" fill="currentColor" stroke="none" />',
+    ];
+
+    // Bento layout: two cards on top, two in the middle, one wide card across the bottom.
+    const cells = [
+      { x: 40,  y: 40,  w: 348, h: 232 },
+      { x: 412, y: 40,  w: 348, h: 232 },
+      { x: 40,  y: 296, w: 348, h: 232 },
+      { x: 412, y: 296, w: 348, h: 232 },
+      { x: 40,  y: 552, w: 720, h: 208 },
+    ];
+
+    const buildPanel = (i: number): string => {
+      const c = cells[i];
+      const accent = accents[i];
+      const text = getSceneText(steps[i]);
+      const iconX = Math.round(c.x + c.w / 2 - 28);
+      const iconY = c.y + 26;
+      const dividerX = Math.round(c.x + c.w / 2 - 24);
+      const foX = c.x + 24;
+      const foY = c.y + 104;
+      const foW = c.w - 48;
+      const foH = c.h - 120;
+      return `
+        <g>
+          <rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" />
+          <circle cx="${c.x + 32}" cy="${c.y + 34}" r="15" fill="${accent}" />
+          <text x="${c.x + 32}" y="${c.y + 39}" fill="#ffffff" font-size="13" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">${i + 1}</text>
+          <g transform="translate(${iconX}, ${iconY})" fill="none" stroke="${accent}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: ${accent}">
+            ${icons[i]}
+          </g>
+          <rect x="${dividerX}" y="${c.y + 92}" width="48" height="3" rx="1.5" fill="${accent}" opacity="0.3" />
+          <foreignObject x="${foX}" y="${foY}" width="${foW}" height="${foH}">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; padding: 0 6px; font-family: system-ui, -apple-system, sans-serif; font-size: 13px; color: #334155; line-height: 1.5; text-align: center; word-wrap: break-word; overflow-wrap: break-word; overflow: hidden;">
+              ${text}
+            </div>
+          </foreignObject>
+        </g>`;
+    };
+
+    const panels = cells.map((_, i) => buildPanel(i)).join('\n');
+
+    const svgContent = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%" style="background-color: #ffffff; font-family: system-ui, -apple-system, sans-serif;">
+        <rect width="800" height="800" fill="#ffffff" />
+        ${panels}
+      </svg>
+    `;
+
+    return `data:image/svg+xml;base64,${Buffer.from(svgContent).toString('base64')}`;
+  }
