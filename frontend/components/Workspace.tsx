@@ -24,11 +24,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-import { detectEdgesAndExtractPaths, Point } from './lib/edgeDetection';
-import { cn } from './lib/utils';
+import { detectEdgesAndExtractPaths, Point } from '../lib/edgeDetection';
+import { cn } from '../lib/utils';
+import { Language, PlotPoint, ElementSequence, Word, StoryboardScene } from '../types';
 
 // Fallback SVG pen if user doesn't upload one
-const FALLBACK_PEN = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>`;
+// Default "pen-in-hand": a hand holding a marker, with the nib tip at ~(12%,12%)
+// of the image so it lands exactly on the active draw point (Golpo-style).
+const FALLBACK_PEN = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 100 100" fill="none"><line x1="13" y1="13" x2="52" y2="52" stroke="%23111827" stroke-width="10" stroke-linecap="round"/><line x1="13" y1="13" x2="52" y2="52" stroke="%236366f1" stroke-width="6.5" stroke-linecap="round"/><line x1="16" y1="16" x2="24" y2="24" stroke="%23f59e0b" stroke-width="6.6"/><circle cx="12" cy="12" r="2.4" fill="%23111827"/><path d="M45 43 C54 38 70 44 80 57 C89 68 87 86 75 90 C62 94 49 88 43 75 C39 66 37 49 45 43 Z" fill="%23f7c9a3" stroke="%23111827" stroke-width="1.8"/><path d="M48 49 q7 -6 14 -3" stroke="%23b07a52" stroke-width="1.4"/><path d="M52 56 q7 -6 14 -2" stroke="%23b07a52" stroke-width="1.4"/><path d="M56 63 q7 -5 14 -1" stroke="%23b07a52" stroke-width="1.4"/><path d="M70 86 L88 94 L94 82 L78 74 Z" fill="%234f46e5" stroke="%23111827" stroke-width="1.6"/></svg>`;
 
 const DEMO_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 100 100" fill="none" stroke="black" stroke-width="1.5"><path d="M25,80 C30,70 30,50 35,40 C40,30 50,25 65,20 C70,18 75,18 78,22 C80,25 78,30 72,35 C60,45 50,55 45,75 C43,80 35,83 30,83 C27,83 24,82 25,80 Z" /><path d="M65,20 C62,28 55,38 45,45" /><path d="M30,83 C29,86 27,88 25,86 C23,84 24,81 25,80" /><circle cx="48" cy="32" r="1.5" fill="black" /><circle cx="56" cy="28" r="1.5" fill="black" /><path d="M50,36 C52,38 54,38 55,36" stroke-linecap="round" /></svg>`;
 
@@ -255,28 +258,6 @@ const locales = {
   }
 };
 
-type Language = 'en' | 'ar';
-
-type PlotPoint = { x: number; y: number; isMoveTo: boolean };
-
-interface ElementSequence {
-  id: string;
-  paths: Point[][];
-  points: PlotPoint[];
-  startTime: number;
-  duration: number;
-  bounds: { minX: number; minY: number; maxX: number; maxY: number };
-  wordIndex?: number; // Index in transcription array
-  elementType?: 'written' | 'visual';
-  writingDirection?: 'auto' | 'rtl' | 'ltr';
-  label?: string;
-}
-
-interface Word {
-  word: string;
-  start: number;
-  end: number;
-}
 
 const safeAtob = (str: string): string => {
   // Normalize base64 alphabet characters
@@ -509,6 +490,9 @@ Start your amazing creative and colorful journey today, and turn your artistic d
   const [useFreeModel, setUseFreeModel] = useState<boolean>(true);
   const autoExtractPendingRef = useRef<boolean>(false);
 
+  // One-click Auto Studio state machine: idle -> creating -> voicing -> idle.
+  const [autoPhase, setAutoPhase] = useState<'idle' | 'creating' | 'voicing'>('idle');
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -661,13 +645,6 @@ Start your amazing creative and colorful journey today, and turn your artistic d
   const [dragState, setDragState] = useState<DragState | null>(null);
 
   // Storyboard pipeline states
-  interface StoryboardScene {
-    scene_id: string;
-    scene_number: number;
-    text: string;
-    duration_seconds: number;
-    bounds?: { minX: number; minY: number; maxX: number; maxY: number };
-  }
   const [storyboardMode, setStoryboardMode] = useState<'IDLE' | 'CREATE' | 'EDIT'>('IDLE');
   const [storyboardStatus, setStoryboardStatus] = useState<'EMPTY' | 'PROCESSING' | 'ACTIVE'>('EMPTY');
   const [scenes, setScenes] = useState<StoryboardScene[]>([]);
@@ -701,9 +678,9 @@ Start your amazing creative and colorful journey today, and turn your artistic d
   const [glowSize, setGlowSize] = useState(20);
   const [baseOpacity, setBaseOpacity] = useState(5); // %
   const [edgeSensitivity, setEdgeSensitivity] = useState(50); // 1-100
-  const [penScale, setPenScale] = useState(10); // scale 1-100 mapped to canvas width percent
-  const [penOffsetX, setPenOffsetX] = useState(8); // 0 = left, 50 = center, 100 = right of the pen image
-  const [penOffsetY, setPenOffsetY] = useState(8); // 0 = top, 50 = center, 100 = bottom of the pen image
+  const [penScale, setPenScale] = useState(16); // scale 1-100 mapped to canvas width percent (bigger so the hand reads)
+  const [penOffsetX, setPenOffsetX] = useState(12); // nib tip x of the hand-in-pen graphic
+  const [penOffsetY, setPenOffsetY] = useState(12); // nib tip y of the hand-in-pen graphic
   const [fps, setFps] = useState(30);
   const [defaultPenSpeed, setDefaultPenSpeed] = useState(50); // 1-100
   const [colorMode, setColorMode] = useState<'paint' | 'outline'>('outline');
@@ -872,8 +849,11 @@ Start your amazing creative and colorful journey today, and turn your artistic d
     }
   };
 
-  const generateNarratorVoice = async () => {
-    if (!scriptText.trim()) return;
+  const generateNarratorVoice = async (overrideScript?: string) => {
+    // Called from an onClick (passes a React event) or from the Auto chain
+    // (passes the script string) — only treat a real string as an override.
+    const script = typeof overrideScript === 'string' ? overrideScript : scriptText;
+    if (!script.trim()) return;
 
     setIsGeneratingVoice(true);
     setProgress({ text: t.generatingVoice, percentage: 30 });
@@ -881,7 +861,7 @@ Start your amazing creative and colorful journey today, and turn your artistic d
       const response = await fetch('/api/generate-narrator-audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script: scriptText, voiceName })
+        body: JSON.stringify({ script, voiceName })
       });
 
       if (!response.ok) {
@@ -904,6 +884,51 @@ Start your amazing creative and colorful journey today, and turn your artistic d
       setIsGeneratingVoice(false);
     }
   };
+
+  // One-click Auto Studio: script -> scenes -> single master image -> per-scene
+  // pen drawing -> narrator voice -> synced playback. This only orchestrates the
+  // existing engine (handleCreateStoryboard auto-extracts & auto-plays; voice
+  // generation auto-scales scene timings to the audio length).
+  const runAutoStudio = async () => {
+    if (!scriptInput.trim() || autoPhase !== 'idle' || isProcessing || isGeneratingVoice) return;
+    setScriptText(scriptInput);
+    setAutoPhase('creating');
+    await handleCreateStoryboard();
+  };
+
+  // Once the storyboard has finished extracting drawable points, generate the
+  // narrator voice for the same script.
+  useEffect(() => {
+    if (autoPhase !== 'creating') return;
+    if (storyboardStatus === 'EMPTY') { setAutoPhase('idle'); return; } // creation failed
+    const extracted =
+      storyboardStatus === 'ACTIVE' &&
+      !isProcessing &&
+      elements.length > 0 &&
+      elements.some(e => (e.points?.length || 0) > 0);
+    if (extracted) {
+      setAutoPhase('voicing');
+      generateNarratorVoice(scriptInput);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPhase, storyboardStatus, isProcessing, elements]);
+
+  // Once the voice is ready (scene timings are already scaled to the audio inside
+  // generateNarratorVoice), restart playback from the top so drawing + voice run
+  // in sync.
+  useEffect(() => {
+    if (autoPhase !== 'voicing') return;
+    if (audioUrl && !isGeneratingVoice) {
+      setAutoPhase('idle');
+      setTimeout(() => {
+        setIsPlaying(false);
+        setCurrentTime(0);
+        if (audioRef.current) audioRef.current.currentTime = 0;
+        setIsPlaying(true);
+      }, 200);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPhase, audioUrl, isGeneratingVoice]);
 
   const transcribeAudio = async (file: File) => {
     setIsTranscribing(true);
@@ -1495,15 +1520,21 @@ Start your amazing creative and colorful journey today, and turn your artistic d
 
     // Direct 5-Panel Whiteboard Storyboard Geometrical & Chronological word-mapping Division Code
     if (isStoryboardImg) {
-      setProgress({ text: isRtl ? 'جاري تقسيم لوحة القصة لـ 5 مجموعات...' : 'Dividing storyboard into 5 chronological panels...', percentage: 40 });
-      
+      // Scene count is driven by the segmentation (elements), so the timeline,
+      // the master image panels and this extraction all agree on the same number.
+      const numScenes = (elements.length >= 2 && elements.length <= 8) ? elements.length : 5;
+      const gridCols = Math.ceil(Math.sqrt(numScenes));
+      const gridRows = Math.ceil(numScenes / gridCols);
+
+      setProgress({ text: isRtl ? `جاري تقسيم لوحة القصة لـ ${numScenes} مشاهد...` : `Dividing storyboard into ${numScenes} chronological panels...`, percentage: 40 });
+
       const allPaths: Point[][] = [];
       extraction.components.forEach(c => {
         allPaths.push(...c.paths);
       });
 
-      const buckets: Point[][][] = Array.from({ length: 5 }, () => []);
-      const boundsList = Array.from({ length: 5 }, () => ({
+      const buckets: Point[][][] = Array.from({ length: numScenes }, () => []);
+      const boundsList = Array.from({ length: numScenes }, () => ({
         minX: 99999,
         minY: 99999,
         maxX: -99999,
@@ -1514,11 +1545,11 @@ Start your amazing creative and colorful journey today, and turn your artistic d
 
       const classifyPanel = (cx: number, cy: number, cw: number, ch: number, isHorizontal: boolean): number => {
         // If elements are initialized with server bounds, group paths by proximity to those bounds
-        const hasValidBounds = elements.length === 5 && elements.every(el => el.bounds && (el.bounds.maxX > el.bounds.minX));
+        const hasValidBounds = elements.length === numScenes && elements.every(el => el.bounds && (el.bounds.maxX > el.bounds.minX));
         if (hasValidBounds) {
           let bestIdx = 0;
           let minDistance = Infinity;
-          for (let i = 0; i < 5; i++) {
+          for (let i = 0; i < numScenes; i++) {
             const b = elements[i].bounds;
             const bCenterX = (b.minX + b.maxX) / 2;
             const bCenterY = (b.minY + b.maxY) / 2;
@@ -1533,22 +1564,24 @@ Start your amazing creative and colorful journey today, and turn your artistic d
           return bestIdx;
         }
 
+        // Generic grid fallback for any scene count
         const nx = cx / cw;
         const ny = cy / ch;
         if (isHorizontal) {
-          let idx = Math.floor(nx * 5);
+          let idx = Math.floor(nx * numScenes);
           if (idx < 0) idx = 0;
-          if (idx > 4) idx = 4;
+          if (idx > numScenes - 1) idx = numScenes - 1;
           return idx;
-        } else {
-          if (ny < 0.38) {
-            return nx < 0.5 ? 0 : 1;
-          } else if (ny < 0.68) {
-            return nx < 0.5 ? 2 : 3;
-          } else {
-            return 4;
-          }
         }
+        let col = Math.floor(nx * gridCols);
+        let row = Math.floor(ny * gridRows);
+        if (col < 0) col = 0;
+        if (col > gridCols - 1) col = gridCols - 1;
+        if (row < 0) row = 0;
+        if (row > gridRows - 1) row = gridRows - 1;
+        let idx = row * gridCols + col;
+        if (idx > numScenes - 1) idx = numScenes - 1;
+        return idx;
       };
 
       allPaths.forEach(path => {
@@ -1595,42 +1628,29 @@ Start your amazing creative and colorful journey today, and turn your artistic d
             b.maxX = el.bounds.maxX;
             b.minY = el.bounds.minY;
             b.maxY = el.bounds.maxY;
+          } else if (isHorizontal) {
+            b.minX = (sIdx / numScenes) * canvas.width;
+            b.maxX = ((sIdx + 1) / numScenes) * canvas.width;
+            b.minY = 0;
+            b.maxY = canvas.height;
           } else {
-            if (isHorizontal) {
-              b.minX = (sIdx * 0.2) * canvas.width;
-              b.maxX = ((sIdx + 1) * 0.2) * canvas.width;
-              b.minY = 0;
-              b.maxY = canvas.height;
-            } else {
-              if (sIdx === 0) {
-                b.minX = 0; b.maxX = canvas.width * 0.5; b.minY = 0; b.maxY = canvas.height * 0.38;
-              } else if (sIdx === 1) {
-                b.minX = canvas.width * 0.5; b.maxX = canvas.width; b.minY = 0; b.maxY = canvas.height * 0.38;
-              } else if (sIdx === 2) {
-                b.minX = 0; b.maxX = canvas.width * 0.5; b.minY = canvas.height * 0.38; b.maxY = canvas.height * 0.68;
-              } else if (sIdx === 3) {
-                b.minX = canvas.width * 0.5; b.maxX = canvas.width; b.minY = canvas.height * 0.38; b.maxY = canvas.height * 0.68;
-              } else {
-                b.minX = 0; b.maxX = canvas.width; b.minY = canvas.height * 0.68; b.maxY = canvas.height;
-              }
-            }
+            const col = sIdx % gridCols;
+            const row = Math.floor(sIdx / gridCols);
+            b.minX = (col / gridCols) * canvas.width;
+            b.maxX = ((col + 1) / gridCols) * canvas.width;
+            b.minY = (row / gridRows) * canvas.height;
+            b.maxY = ((row + 1) / gridRows) * canvas.height;
           }
         }
       });
 
       const totalWords = transcription.length;
-      const stepLabels = storyboardSteps.length === 5 ? storyboardSteps.map(s => {
+      const stepLabels = storyboardSteps.length === numScenes ? storyboardSteps.map(s => {
         const ar = s.titleAr || s.scriptAr || '';
         const en = s.titleEn || s.scriptEn || s.desc || '';
         if (ar && en) return `${ar} | ${en}`;
         return ar || en || "Panel";
-      }) : [
-        isRtl ? "المشهد ١: البداية" : "Panel 1: Beginning",
-        isRtl ? "المشهد ٢: التطوير" : "Panel 2: Development",
-        isRtl ? "المشهد ٣: الذروة" : "Panel 3: Climax",
-        isRtl ? "المشهد ٤: الحل" : "Panel 4: Resolution",
-        isRtl ? "المشهد ٥: النهاية" : "Panel 5: Ending"
-      ];
+      }) : Array.from({ length: numScenes }, (_, i) => isRtl ? `المشهد ${i + 1}` : `Scene ${i + 1}`);
 
       newElements = buckets.map((bucketPaths, sIdx) => {
          const b = boundsList[sIdx];
@@ -1643,8 +1663,8 @@ Start your amazing creative and colorful journey today, and turn your artistic d
          let wordIndex = -1;
 
          if (totalWords > 0) {
-            const startWIdx = Math.floor((sIdx / 5) * totalWords);
-            const endWIdx = Math.min(totalWords - 1, Math.floor(((sIdx + 1) / 5) * totalWords) - 1);
+            const startWIdx = Math.floor((sIdx / numScenes) * totalWords);
+            const endWIdx = Math.min(totalWords - 1, Math.floor(((sIdx + 1) / numScenes) * totalWords) - 1);
             const startWord = transcription[startWIdx];
             const endWord = transcription[endWIdx >= startWIdx ? endWIdx : startWIdx];
             if (startWord && endWord) {
@@ -1662,7 +1682,9 @@ Start your amazing creative and colorful journey today, and turn your artistic d
             duration: Number(elementDuration.toFixed(1)),
             bounds: { minX: b.minX, minY: b.minY, maxX: b.maxX, maxY: b.maxY },
             label: stepLabels[sIdx],
-            elementType: 'visual' as 'written' | 'visual',
+            // 'written' → the pen DRAWS the black ink line (outline), instead of
+            // 'visual' which reveals/inks the finished image under a wide brush.
+            elementType: 'written' as 'written' | 'visual',
             writingDirection: isRtl ? 'rtl' : 'ltr' as any,
             wordIndex: wordIndex !== -1 ? wordIndex : undefined
          };
@@ -1863,6 +1885,26 @@ Start your amazing creative and colorful journey today, and turn your artistic d
     setTimeout(() => startAnimation(false), 150);
   };
 
+  // Stroke a polyline as a smooth curve (quadratic through midpoints) up to
+  // `count` points, honoring pen-lift breaks (isMoveTo). Smoother than lineTo.
+  const strokeSmoothed = (maskCtx: CanvasRenderingContext2D, pts: PlotPoint[], count: number) => {
+    const n = Math.min(count, pts.length);
+    if (n <= 0) return;
+    maskCtx.beginPath();
+    let started = false;
+    for (let i = 0; i < n; i++) {
+      const pt = pts[i];
+      if (!started || pt.isMoveTo) {
+        maskCtx.moveTo(pt.x, pt.y);
+        started = true;
+      } else {
+        const prev = pts[i - 1];
+        maskCtx.quadraticCurveTo(prev.x, prev.y, (prev.x + pt.x) / 2, (prev.y + pt.y) / 2);
+      }
+    }
+    maskCtx.stroke();
+  };
+
   const drawCanvas = (time: number) => {
     const canvas = canvasRef.current;
     const img = mainImgRef.current;
@@ -1973,15 +2015,7 @@ Start your amazing creative and colorful journey today, and turn your artistic d
             }
 
             if (remainingPointsForThisEl >= pointsCount) {
-              targetMaskCtx.beginPath();
-              const startPt = el.points[0];
-              targetMaskCtx.moveTo(startPt.x, startPt.y);
-              for (let i = 1; i < pointsCount; i++) {
-                const pt = el.points[i];
-                if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
-                else targetMaskCtx.lineTo(pt.x, pt.y);
-              }
-              targetMaskCtx.stroke();
+              strokeSmoothed(targetMaskCtx, el.points, pointsCount);
             } else {
               const targetIndex = Math.min(pointsCount, Math.floor(remainingPointsForThisEl));
               const brushRadius = brushWidth / 2;
@@ -1992,15 +2026,7 @@ Start your amazing creative and colorful journey today, and turn your artistic d
               const maskTargetIndex = Math.max(0, targetIndex - lagCount);
 
               if (maskTargetIndex > 0) {
-                targetMaskCtx.beginPath();
-                const startPt = el.points[0];
-                targetMaskCtx.moveTo(startPt.x, startPt.y);
-                for (let i = 1; i < maskTargetIndex; i++) {
-                  const pt = el.points[i];
-                  if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
-                  else targetMaskCtx.lineTo(pt.x, pt.y);
-                }
-                targetMaskCtx.stroke();
+                strokeSmoothed(targetMaskCtx, el.points, maskTargetIndex);
               }
 
               if (targetIndex > 0 && el.points[targetIndex - 1]) {
@@ -2009,15 +2035,7 @@ Start your amazing creative and colorful journey today, and turn your artistic d
             }
           } else {
             // Drawing is done: Draw all elements of all scenes fully
-            targetMaskCtx.beginPath();
-            const startPt = el.points[0];
-            targetMaskCtx.moveTo(startPt.x, startPt.y);
-            for (let i = 1; i < pointsCount; i++) {
-              const pt = el.points[i];
-              if (pt.isMoveTo) targetMaskCtx.moveTo(pt.x, pt.y);
-              else targetMaskCtx.lineTo(pt.x, pt.y);
-            }
-            targetMaskCtx.stroke();
+            strokeSmoothed(targetMaskCtx, el.points, pointsCount);
           }
         }
       }
@@ -2153,10 +2171,13 @@ Start your amazing creative and colorful journey today, and turn your artistic d
     const shouldZoom = frameBounds !== null;
 
     if (frameBounds) {
-      minX = frameBounds.minX;
-      minY = frameBounds.minY;
-      w = frameBounds.maxX - frameBounds.minX;
-      h = frameBounds.maxY - frameBounds.minY;
+      // Integer-snap the active frame box so the clip rect + camera translate land
+      // on whole pixels. Float bounds left a sub-pixel seam that interpolated the
+      // neighbouring scene (Scene 2) into the active frame (Scene 1).
+      minX = Math.floor(frameBounds.minX);
+      minY = Math.floor(frameBounds.minY);
+      w = Math.ceil(frameBounds.maxX) - minX;
+      h = Math.ceil(frameBounds.maxY) - minY;
     }
 
     // SMOOTH TRANSITION JUMP: the moment the playhead crosses into a new frame,
@@ -2181,12 +2202,17 @@ Start your amazing creative and colorful journey today, and turn your artistic d
     ctx.save();
 
     if (shouldZoom) {
-      // Scale and translate the context so this specific box stretches to fill the entire canvas viewport
-      ctx.translate(-minX * scale + (cw - w * scale) / 2, -minY * scale + (ch - h * scale) / 2);
+      // Scale and translate the context so this specific box stretches to fill the
+      // entire canvas viewport. Round the translation to whole device pixels so the
+      // scaled master image samples cleanly at the clip edge (no sub-seam bleed).
+      const tx = Math.round(-minX * scale + (cw - w * scale) / 2);
+      const ty = Math.round(-minY * scale + (ch - h * scale) / 2);
+      ctx.translate(tx, ty);
       ctx.scale(scale, scale);
 
       ctx.beginPath();
-      // Create a clipping mask around ONLY the active scene's rectangle box
+      // Clip to ONLY the active scene's integer rectangle BEFORE drawing the master
+      // image chunk, so adjacent grid scenes can never warp into this frame.
       ctx.rect(minX, minY, w, h);
       ctx.clip();
     }
@@ -2528,14 +2554,17 @@ Start your amazing creative and colorful journey today, and turn your artistic d
             duration: dur,
             bounds: { minX, maxX, minY, maxY },
             label: lang === 'en' ? `Scene ${scene.scene_number}` : `مشهد ${scene.scene_number}`,
-            elementType: 'visual' as const,
+            elementType: 'written' as const,
             writingDirection: 'auto' as const
           };
         });
         setElements(tempElements);
         setCurrentTime(0);
 
-        // Call the image generation endpoint to generate the storyboard image automatically
+        // Call the image generation endpoint to generate the storyboard image
+        // automatically. Force the REAL image model (useFreeModel: false) — the
+        // free path makes the LLM write raw SVG/path code, which renders as a
+        // blueprint of code unrelated to the script. We want a drawn illustration.
         const imgResponse = await fetch('/api/generate-storyboard-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2543,7 +2572,8 @@ Start your amazing creative and colorful journey today, and turn your artistic d
             text: scriptInput,
             style: storyboardStyle,
             bgColor: 'white',
-            useFreeModel: useFreeModel
+            useFreeModel: false,
+            sceneCount: data.scenes.length
           })
         });
 
@@ -2819,6 +2849,32 @@ Start your amazing creative and colorful journey today, and turn your artistic d
             {lang === 'en' ? 'Share / Invite' : 'مشاركة / دعوة'}
           </button>
           
+          {/* One-Click Auto Studio */}
+          <button
+            disabled={isProcessing || isGeneratingVoice || autoPhase !== 'idle' || !scriptInput.trim()}
+            onClick={runAutoStudio}
+            title={lang === 'en'
+              ? 'Generate scenes, master image, voice and synced drawing automatically from the script'
+              : 'توليد المشاهد والصورة الماستر والصوت والرسم المتزامن تلقائياً من السكريبت'}
+            className={cn(
+              "h-9 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-bold select-none border transition-all shadow-sm",
+              (isProcessing || isGeneratingVoice || autoPhase !== 'idle')
+                ? "bg-indigo-100 border-indigo-100 text-indigo-400 cursor-wait"
+                : !scriptInput.trim()
+                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-indigo-600 to-purple-600 border-transparent text-white hover:from-indigo-700 hover:to-purple-700 active:scale-[0.98] cursor-pointer"
+            )}
+          >
+            {autoPhase !== 'idle'
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin text-current" />
+              : <Sparkles className="w-3.5 h-3.5 text-current" />}
+            {autoPhase === 'creating'
+              ? (lang === 'en' ? 'Building…' : 'بيرسم…')
+              : autoPhase === 'voicing'
+              ? (lang === 'en' ? 'Voicing…' : 'الصوت…')
+              : (lang === 'en' ? 'Auto ✨' : 'تلقائي ✨')}
+          </button>
+
           {/* Export Video Button */}
           <button
             disabled={!mainImgUrl || isProcessing || isAnimating || isExporting}
