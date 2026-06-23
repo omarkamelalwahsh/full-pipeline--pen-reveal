@@ -9,7 +9,7 @@ export default function registerNarratorAudioRoute(app: Express) {
   // API Route for Generating Expressive Narrative Audiobook Voiceovers (TTS) and Transcribing them
   app.post("/api/generate-narrator-audio", async (req, res) => {
     try {
-      const { script, voiceName = "Kore" } = req.body;
+      const { script, voiceName = "Kore" } = req.body || {};
       if (!script) {
         return res.status(400).json({ error: "No script text provided" });
       }

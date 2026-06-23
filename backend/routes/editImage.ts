@@ -10,7 +10,7 @@ export default function registerEditImageRoute(app: Express) {
   // API Route for AI Image Editing via Gemini 2.5 Image Editing Model
   app.post("/api/edit-image", async (req, res) => {
     try {
-      const { image, prompt, steps: clientSteps, style, bgColor, isStoryboardImg } = req.body;
+      const { image, prompt, steps: clientSteps, style, bgColor, isStoryboardImg } = req.body || {};
       if (!image) {
         return res.status(400).json({ error: "No image provided for editing" });
       }

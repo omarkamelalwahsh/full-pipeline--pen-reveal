@@ -6,7 +6,7 @@ import { SyncElement, Word } from "../types.ts";
 export default function registerSyncElementsRoute(app: Express) {
   // API Route for Auto-Syncing OCR elements to Transcription
   app.post("/api/sync-elements", upload.single("image"), async (req, res) => {
-    const { data } = req.body;
+    const { data } = req.body || {};
     let elements: SyncElement[] = [];
     let transcription: Word[] = [];
     

@@ -8,7 +8,7 @@ export default function registerPipelineCreateRoute(app: Express) {
   // API Route for Pipeline Create (AI Script Parser)
   app.post("/api/pipeline/create", async (req, res) => {
     try {
-      const { script } = req.body;
+      const { script } = req.body || {};
       if (!script) {
         return res.status(400).json({ error: "No script text provided" });
       }
@@ -109,7 +109,7 @@ export default function registerPipelineCreateRoute(app: Express) {
   // API Route for Pipeline Edit (targeted incremental update)
   app.put("/api/pipeline/edit", async (req, res) => {
     try {
-      const { scene_id, text } = req.body;
+      const { scene_id, text } = req.body || {};
       if (!scene_id || text === undefined) {
         return res.status(400).json({ error: "Missing scene_id or text" });
       }

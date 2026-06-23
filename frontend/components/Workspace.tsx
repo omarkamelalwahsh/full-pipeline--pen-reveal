@@ -2526,7 +2526,29 @@ Start your amazing creative and colorful journey today, and turn your artistic d
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ script: scriptInput })
       });
-      if (!response.ok) throw new Error('Failed to create storyboard');
+      if (!response.ok) {
+        let errMsg = 'Failed to create storyboard';
+        try {
+          const errData = await response.json();
+          if (errData && errData.error) {
+            errMsg = `${errMsg}: ${errData.error}`;
+          } else if (errData && errData.message) {
+            errMsg = `${errMsg}: ${errData.message}`;
+          }
+        } catch {
+          try {
+            const text = await response.text();
+            if (text) {
+              errMsg = `${errMsg} (Status ${response.status}): ${text.substring(0, 150)}`;
+            } else {
+              errMsg = `${errMsg} (Status: ${response.status})`;
+            }
+          } catch {
+            errMsg = `${errMsg} (Status: ${response.status})`;
+          }
+        }
+        throw new Error(errMsg);
+      }
       const data = await response.json();
       if (data.scenes && Array.isArray(data.scenes)) {
         setScenes(data.scenes);
@@ -2615,7 +2637,29 @@ Start your amazing creative and colorful journey today, and turn your artistic d
           text: activeSceneText
         })
       });
-      if (!response.ok) throw new Error('Failed to edit storyboard');
+      if (!response.ok) {
+        let errMsg = 'Failed to edit storyboard';
+        try {
+          const errData = await response.json();
+          if (errData && errData.error) {
+            errMsg = `${errMsg}: ${errData.error}`;
+          } else if (errData && errData.message) {
+            errMsg = `${errMsg}: ${errData.message}`;
+          }
+        } catch {
+          try {
+            const text = await response.text();
+            if (text) {
+              errMsg = `${errMsg} (Status ${response.status}): ${text.substring(0, 150)}`;
+            } else {
+              errMsg = `${errMsg} (Status: ${response.status})`;
+            }
+          } catch {
+            errMsg = `${errMsg} (Status: ${response.status})`;
+          }
+        }
+        throw new Error(errMsg);
+      }
       const data = await response.json();
       if (data.success && data.scene) {
         const updatedScenes = scenes.map(s => {

@@ -9,7 +9,7 @@ export default function registerStoryboardImageRoute(app: Express) {
   // API Route for generating a storyboard main image via prompt and script understanding
   app.post("/api/generate-storyboard-image", async (req, res) => {
     try {
-      const { text, style, bgColor, useFreeModel, sceneCount } = req.body;
+      const { text, style, bgColor, useFreeModel, sceneCount } = req.body || {};
       if (!text) {
         return res.status(400).json({ error: "Missing transcription text" });
       }
